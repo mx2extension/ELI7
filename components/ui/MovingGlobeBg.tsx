@@ -22,7 +22,7 @@ export default function MovingGlobeBg() {
 
   const projection = geoOrthographic()
     .scale(400)
-    .translate([400, 400]) // <--- ADDED THIS to perfectly center the globe in the 800x800 canvas
+    .translate([400, 400])
     .rotate(rotation);
 
   return (
@@ -30,7 +30,7 @@ export default function MovingGlobeBg() {
       <div className="w-[300vmin] h-[300vmin] opacity-[0.15] flex items-center justify-center">
         {isMounted && (
           <ComposableMap
-            projection={projection}
+            projection={projection as any} // Cast added to pass TypeScript checks
             width={800}
             height={800}
             style={{ width: "100%", height: "100%" }}
