@@ -1,13 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase/client';
 import { Save, ArrowLeft, Building2, Mail } from 'lucide-react';
 import Link from 'next/link';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
@@ -16,8 +12,10 @@ export default function AdminSettingsPage() {
   
   // Bank fields state
   const [ngnBankName, setNgnBankName] = useState('');
+  const [ngnAccountName, setNgnAccountName] = useState('');
   const [ngnAccount, setNgnAccount] = useState('');
   const [usdBankName, setUsdBankName] = useState('');
+  const [usdAccountName, setUsdAccountName] = useState('');
   const [usdAccount, setUsdAccount] = useState('');
 
   useEffect(() => {
@@ -30,13 +28,15 @@ export default function AdminSettingsPage() {
     if (error) {
       console.error('Error fetching settings:', error);
     } else if (data) {
-      const map: any = {};
+      const map: Record<string, string> = {};
       data.forEach((item) => {
         map[item.key] = item.value;
       });
       setNgnBankName(map['ngn_bank_name'] || 'First Bank');
+      setNgnAccountName(map['ngn_account_name'] || 'ELI7 Foundation');
       setNgnAccount(map['ngn_account'] || '5072049395');
       setUsdBankName(map['usd_bank_name'] || 'Zenith Bank');
+      setUsdAccountName(map['usd_account_name'] || 'ELI7 Foundation');
       setUsdAccount(map['usd_account'] || '2046092805');
       setEmailContact(map['support_email'] || 'debiekaunafoundation@gmail.com');
     }
@@ -49,8 +49,10 @@ export default function AdminSettingsPage() {
 
     const updates = [
       { key: 'ngn_bank_name', value: ngnBankName },
+      { key: 'ngn_account_name', value: ngnAccountName },
       { key: 'ngn_account', value: ngnAccount },
       { key: 'usd_bank_name', value: usdBankName },
+      { key: 'usd_account_name', value: usdAccountName },
       { key: 'usd_account', value: usdAccount },
       { key: 'support_email', value: emailContact },
     ];
@@ -58,7 +60,7 @@ export default function AdminSettingsPage() {
     for (const update of updates) {
       const { error } = await supabase
         .from('settings')
-        .update({ value: update.value, updated_at: new Date() })
+        .update({ value: update.value, updated_at: new Date().toISOString() })
         .eq('key', update.key);
 
       if (error) {
@@ -72,7 +74,7 @@ export default function AdminSettingsPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-sm font-bold">Loading settings...</div>;
+    return <div className="p-8 text-sm font-bold bg-[#F4F1EA] min-h-screen">Loading settings...</div>;
   }
 
   return (
@@ -85,7 +87,7 @@ export default function AdminSettingsPage() {
           System Settings
         </h1>
         <p className="text-sm font-medium text-gray-600">
-          Manage foundation banking parameters, bank names, and support contact references dynamically.
+          Manage foundation banking parameters, account names, and support contact references dynamically.
         </p>
       </div>
 
@@ -116,6 +118,16 @@ export default function AdminSettingsPage() {
                 />
               </div>
               <div>
+                <label className="block text-xs font-semibold mb-1">Account Name</label>
+                <input 
+                  type="text" 
+                  value={ngnAccountName}
+                  onChange={(e) => setNgnAccountName(e.target.value)}
+                  className="w-full p-3 border-2 border-[#0A0A0A] bg-white text-sm font-medium focus:outline-none focus:border-[#C62828]"
+                  required
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-semibold mb-1">Account Number</label>
                 <input 
                   type="text" 
@@ -136,6 +148,16 @@ export default function AdminSettingsPage() {
                   type="text" 
                   value={usdBankName}
                   onChange={(e) => setUsdBankName(e.target.value)}
+                  className="w-full p-3 border-2 border-[#0A0A0A] bg-white text-sm font-medium focus:outline-none focus:border-[#C62828]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Account Name</label>
+                <input 
+                  type="text" 
+                  value={usdAccountName}
+                  onChange={(e) => setUsdAccountName(e.target.value)}
                   className="w-full p-3 border-2 border-[#0A0A0A] bg-white text-sm font-medium focus:outline-none focus:border-[#C62828]"
                   required
                 />

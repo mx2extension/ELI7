@@ -1,14 +1,16 @@
+
 'use client';
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import ScrollReveal from '@/components/ScrollReveal';
-import { 
-  Heart, 
-  Users, 
-  ShieldCheck, 
-  ArrowUpRight, 
-  Sparkles, 
+import {
+  Heart,
+  Users,
+  ShieldCheck,
+  ArrowUpRight,
+  Sparkles,
   Quote,
   ChevronDown
 } from 'lucide-react';
@@ -33,38 +35,39 @@ export default function HomePage() {
 
   useEffect(() => {
     async function fetchData() {
-      // 1. Fetch dynamic categories for Core Pillars (limit to 4)
       const { data: categories } = await supabase
         .from('gallery_categories')
         .select('id, title, slug, description, cover_image_url, created_at')
         .order('created_at', { ascending: true })
         .limit(4);
+
       setCorePillars(categories || []);
 
-      // 2. Fetch Latest News
       const { data: news } = await supabase
         .from('news')
         .select('id, title, slug, excerpt, image_url, created_at')
         .order('created_at', { ascending: false })
         .limit(4);
+
       setLatestNews(news || []);
 
-      // 3. Fetch Latest Stories
       const { data: stories } = await supabase
         .from('stories')
         .select('id, title, slug, excerpt, image_url, created_at')
         .order('created_at', { ascending: false })
         .limit(4);
+
       setLatestStories(stories || []);
 
-      // 4. Fetch Latest Galleries from gallery_categories
       const { data: galleries } = await supabase
         .from('gallery_categories')
         .select('id, title, slug, description, cover_image_url, created_at')
         .order('created_at', { ascending: false })
         .limit(3);
+
       setLatestGalleries(galleries || []);
     }
+
     fetchData();
   }, []);
 
@@ -85,7 +88,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-20 pb-20">
-      
+
       {/* 1. HERO SECTION */}
       <section className="max-w-7xl mx-auto px-6 pt-12 md:pt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <ScrollReveal>
@@ -93,13 +96,13 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 bg-[#C62828] text-white font-bold text-xs uppercase px-3.5 py-1.5 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A]">
               <Sparkles className="w-4 h-4" /> Women-Led Nationwide Impact & Support
             </div>
-            
+
             <h1 className="text-4xl md:text-6xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] tracking-tight leading-tight">
               Extending Love, Empowering Communities, and Building Futures Across Nigeria
             </h1>
 
             <p className="text-lg text-[#0A0A0A]/80 leading-relaxed font-medium">
-              We are a dedicated women-led organization building a framework where vulnerable populations, persons with disabilities, and underserved communities thrive as equal participants in society. Through your support, we break barriers and build sustainable futures across Nigeria.
+              We are a dedicated women-led organization building a framework where vulnerable populations, persons with disabilities, and underserved communities thrive as equal participants in society—especially women and girls—through education, health, economic empowerment and protection. Through your support, we break barriers and build sustainable futures across Nigeria.
             </p>
 
             <div className="flex flex-wrap gap-4 pt-2">
@@ -107,8 +110,9 @@ export default function HomePage() {
                 href="/donate"
                 className="inline-flex items-center gap-2 bg-[#C62828] text-white font-bold text-sm uppercase px-6 py-3.5 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#293241] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
               >
-                Support Our Cause <Heart className="w-5 h-5 fill-current" />
+                Donate Now <Heart className="w-5 h-5 fill-current" />
               </Link>
+
               <Link
                 href="/projects"
                 className="inline-flex items-center gap-2 bg-[#FFFFFE] text-[#0A0A0A] font-bold text-sm uppercase px-6 py-3.5 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#00897B] hover:text-white hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
@@ -122,12 +126,13 @@ export default function HomePage() {
         <ScrollReveal delay={200}>
           <div className="bg-[#00897B] border-2 border-[#0A0A0A] shadow-[12px_12px_0px_#0A0A0A] p-4 md:p-6 text-white space-y-4">
             <div className="h-72 border-2 border-[#0A0A0A] overflow-hidden bg-[#FFFFFE]">
-              <img 
-                src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787232909/1d6b61c3-2f2a-4ad8-b810-6ba70ea816f8.png" 
-                alt="Community Impact" 
+              <img
+                src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787232909/1d6b61c3-2f2a-4ad8-b810-6ba70ea816f8.png"
+                alt="Community Impact"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
             </div>
+
             <div className="flex justify-between items-center pt-2">
               <div>
                 <p className="text-xs uppercase tracking-wider text-[#FFD23F] font-bold">Nationwide Reach</p>
@@ -141,56 +146,133 @@ export default function HomePage() {
         </ScrollReveal>
       </section>
 
-      {/* 2. CORE PILLARS (FETCHED FROM CATEGORIES) */}
+      {/* 2. MISSION & GOALS - REDESIGNED */}
       <section className="max-w-7xl mx-auto px-6 space-y-12">
+
         <ScrollReveal>
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider bg-[#C62828] text-white px-3 py-1 border border-[#0A0A0A]">Our Focus</span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#293241] font-['Bricolage_Grotesque']">
-              The Mission & Goals Of Our Foundation
-            </h2>
-            <p className="text-[#0A0A0A]/80 leading-relaxed text-base">
-              We catalyze inclusive transformation by expanding opportunities through structured education, digital literacy, economic support, and community protection initiatives.
-            </p>
+          <div className="relative bg-[#F4F1EA] border-2 border-[#0A0A0A] shadow-[10px_10px_0px_#0A0A0A] p-8 md:p-14 overflow-hidden">
+
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#00897B]/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative max-w-3xl space-y-5">
+              <div className="inline-flex items-center gap-2 bg-[#C62828] text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 border border-[#0A0A0A]">
+                <Sparkles className="w-3.5 h-3.5" />
+                Our Purpose & Direction
+              </div>
+
+              <h2 className="text-3xl md:text-5xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] tracking-tight leading-tight">
+                The Mission & Goals Of Our Organization
+              </h2>
+
+              <p className="text-base md:text-lg text-[#0A0A0A]/75 leading-relaxed max-w-2xl">
+                At ELI7, our mission is to catalyze inclusive transformation by advancing the rights and opportunities of persons with disabilities, underserved communities, especially women and girls. We break barriers through education, healthcare, economic empowerment, and protection initiatives, ensuring full participation in Nigerian society.
+              </p>
+
+              <div className="flex items-center gap-3 pt-2">
+                <div className="h-1 w-14 bg-[#C62828]" />
+                <div className="h-1 w-7 bg-[#00897B]" />
+                <div className="h-1 w-3 bg-[#FFD23F]" />
+              </div>
+            </div>
           </div>
         </ScrollReveal>
 
         <ScrollReveal delay={150}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {corePillars.map((category, index) => {
-              const IconComponent = index % 2 === 0 ? ShieldCheck : Heart;
-              const badgeColor = index % 2 === 0 ? 'bg-[#C62828]' : 'bg-[#00897B]';
+          <div className="space-y-7">
 
-              return (
-                <div key={category.id} className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] overflow-hidden flex flex-col justify-between group">
-                  <div className="h-36 border-b-2 border-[#0A0A0A] overflow-hidden bg-[#00897B]">
-                    {category.cover_image_url ? (
-                      <img src={category.cover_image_url} alt={category.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs font-bold uppercase text-white/40">[Pillar Visual]</div>
-                    )}
-                  </div>
-                  <div className="p-6 space-y-3 flex flex-col flex-grow justify-between">
-                    <div className="space-y-3">
-                      <div className={`w-10 h-10 ${badgeColor} border-2 border-[#0A0A0A] flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] -mt-10 relative z-10 text-white`}>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b-2 border-[#0A0A0A]/15 pb-5">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-[#00897B]">
+                  What Drives Us
+                </span>
+                <h3 className="text-2xl md:text-3xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] mt-1">
+                  Our Areas of Focus
+                </h3>
+              </div>
+
+              <p className="text-sm text-[#0A0A0A]/60 max-w-sm leading-relaxed">
+                The strategic areas guiding our commitment to stronger and more inclusive communities.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {corePillars.map((category, index) => {
+                const IconComponent = index % 2 === 0 ? ShieldCheck : Heart;
+                const badgeColor = index % 2 === 0 ? 'bg-[#C62828]' : 'bg-[#00897B]';
+
+                return (
+                  <div
+                    key={category.id}
+                    className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A] flex flex-col overflow-hidden"
+                  >
+                    <div className="relative h-48 border-b-2 border-[#0A0A0A] overflow-hidden bg-[#00897B]">
+                      {category.cover_image_url ? (
+                        <img
+                          src={category.cover_image_url}
+                          alt={category.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <IconComponent className="w-12 h-12 text-white/40" />
+                        </div>
+                      )}
+
+                      <div className="absolute top-3 left-3 bg-[#FFFFFE] text-[#293241] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1.5 border border-[#0A0A0A]">
+                        Focus Area {String(index + 1).padStart(2, '0')}
+                      </div>
+                    </div>
+
+                    <div className="p-6 flex flex-col flex-grow gap-4">
+
+                      <div className={`w-11 h-11 ${badgeColor} border-2 border-[#0A0A0A] flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] text-white`}>
                         <IconComponent className="w-5 h-5" />
                       </div>
-                      <h3 className="text-xl font-bold text-[#293241] font-['Bricolage_Grotesque']">{category.title}</h3>
-                      {category.description && (
-                        <p className="text-sm text-[#0A0A0A]/80 leading-relaxed line-clamp-3">{category.description}</p>
-                      )}
-                    </div>
-                    <div className="pt-4">
-                      <Link href={`/gallery/${category.slug}`} className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] hover:text-[#0A0A0A] transition-colors underline underline-offset-4">
-                        Explore Category &rarr;
-                      </Link>
+
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] leading-snug">
+                          {category.title}
+                        </h3>
+
+                        {category.description && (
+                          <p className="text-sm text-[#0A0A0A]/70 leading-relaxed">
+                            {category.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mt-auto pt-3 border-t border-[#0A0A0A]/10">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#00897B]">
+                          ELI7 Foundation
+                        </span>
+                      </div>
+
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </ScrollReveal>
+
+        <div className="bg-[#293241] border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#FFD23F] text-[#293241] flex items-center justify-center flex-shrink-0 border-2 border-[#0A0A0A]">
+              <Heart className="w-6 h-6 fill-current" />
+            </div>
+            <p className="text-white text-sm md:text-base font-medium leading-relaxed max-w-2xl">
+              Every focus area represents a commitment to building stronger, more inclusive communities.
+            </p>
+          </div>
+
+          <Link
+            href="/impact"
+            className="inline-flex items-center gap-2 bg-[#C62828] text-white font-bold text-xs uppercase px-5 py-3 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:bg-[#00897B] transition-colors whitespace-nowrap"
+          >
+            Explore Our Work <ArrowUpRight className="w-4 h-4" />
+          </Link>
+        </div>
+
       </section>
 
       {/* 3. DIRECTOR OF OPERATIONS NOTE */}
@@ -203,9 +285,9 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center pt-4">
               <div className="h-80 border-2 border-[#0A0A0A] bg-[#00897B] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden">
-                <img 
-                  src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787737369/d2ab0c13-fa51-4d64-b2a3-765caa32c239.png" 
-                  alt="Amarachi Sunday" 
+                <img
+                  src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787737369/d2ab0c13-fa51-4d64-b2a3-765caa32c239.png"
+                  alt="Amarachi Sunday"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -222,11 +304,13 @@ export default function HomePage() {
 
                 <div className="space-y-4 text-[#0A0A0A]/80 text-base md:text-lg leading-relaxed font-medium">
                   <p>
-                    &ldquo;Overseeing the entire scope and vision of the ELI7 Foundation, I see firsthand the profound resilience of the Nigerian people, and equally, the immense challenges faced by vulnerable groups and persons with disabilities. 
+                    &ldquo;Overseeing the entire scope and vision of the ELI7 Foundation, I see firsthand the profound resilience of the Nigerian people, and equally, the immense challenges faced by vulnerable groups and persons with disabilities.
                   </p>
+
                   <p>
                     True transformation cannot happen from a distance. It takes all of us—our hearts, our resources, and our unwavering commitment—to dismantle barriers and build a truly inclusive society. Every project we run, from food welfare to digital skills empowerment, relies on the generosity of partners like you.
                   </p>
+
                   <p className="font-bold text-[#293241]">
                     When you support our work, you aren&apos;t just giving to a foundation; you are restoring dignity and creating real, lasting change for families across Nigeria who need it most. Join hands with us today.&rdquo;
                   </p>
@@ -235,8 +319,9 @@ export default function HomePage() {
                 <div className="pt-2 flex items-center justify-between flex-wrap gap-4">
                   <div>
                     <p className="font-extrabold text-xl text-[#293241] font-['Bricolage_Grotesque']">Amarachi Sunday</p>
-                    <p className="text-sm font-bold text-[#C62828] uppercase">Director of Operations, ELI7 Foundation</p>
+                    <p className="text-sm font-bold text-[#C62828] uppercase">Executive Director, ELI7 Foundation</p>
                   </div>
+
                   <Link
                     href="/donate"
                     className="inline-flex items-center gap-2 bg-[#C62828] text-white font-bold text-xs uppercase px-5 py-3 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:bg-[#293241] hover:text-white transition-colors"
@@ -264,16 +349,19 @@ export default function HomePage() {
 
         <ScrollReveal delay={150}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
             <div className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] flex flex-col justify-between overflow-hidden">
               <div className="h-48 border-b-2 border-[#0A0A0A] bg-[#00897B]">
                 <img src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787231895/dafb89d5-fa43-4a50-b39f-c969e1f9bffe.png" alt="Donate" className="w-full h-full object-cover" />
               </div>
+
               <div className="p-6 space-y-4 flex flex-col flex-grow justify-between">
                 <div className="space-y-3">
                   <span className="bg-[#00897B] text-white text-xs font-bold uppercase px-2.5 py-1 border border-[#0A0A0A]">Donate</span>
                   <h3 className="text-xl font-bold text-[#293241] font-['Bricolage_Grotesque']">Every Penny Goes Towards Impactful Programs</h3>
                   <p className="text-sm text-[#0A0A0A]/80 leading-relaxed">Direct financial support fuels our ongoing field distributions, educational drives, and community empowerment initiatives.</p>
                 </div>
+
                 <Link href="/donate" className="inline-flex items-center gap-2 bg-[#00897B] text-white font-bold text-xs uppercase px-4 py-2.5 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#293241] transition-colors">
                   Support the Cause <ArrowUpRight className="w-4 h-4" />
                 </Link>
@@ -284,12 +372,14 @@ export default function HomePage() {
               <div className="h-48 border-b-2 border-[#0A0A0A] bg-[#00897B]">
                 <img src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787233915/6e1d1e38-7c35-4b56-bf27-727c54f470b4.png" alt="Volunteer" className="w-full h-full object-cover" />
               </div>
+
               <div className="p-6 space-y-4 flex flex-col flex-grow justify-between">
                 <div className="space-y-3">
                   <span className="bg-[#C62828] text-white text-xs font-bold uppercase px-2.5 py-1 border border-[#0A0A0A]">Volunteer</span>
                   <h3 className="text-xl font-bold text-[#293241] font-['Bricolage_Grotesque']">Join Our Hands-On Efforts</h3>
                   <p className="text-sm text-[#0A0A0A]/80 leading-relaxed">Give your time and skills to support field distributions, workshops, and community mentorship programs.</p>
                 </div>
+
                 <Link href="/volunteer" className="inline-flex items-center gap-2 bg-[#C62828] text-white font-bold text-xs uppercase px-4 py-2.5 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#293241] transition-colors">
                   Become a Volunteer <ArrowUpRight className="w-4 h-4" />
                 </Link>
@@ -300,22 +390,25 @@ export default function HomePage() {
               <div className="h-48 border-b-2 border-[#0A0A0A] bg-[#00897B]">
                 <img src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787238632/5fb9af94-f599-4461-9c72-312714242377.png" alt="Fundraise" className="w-full h-full object-cover" />
               </div>
+
               <div className="p-6 space-y-4 flex flex-col flex-grow justify-between">
                 <div className="space-y-3">
                   <span className="bg-[#00897B] text-white text-xs font-bold uppercase px-2.5 py-1 border border-[#0A0A0A]">Fundraise</span>
                   <h3 className="text-xl font-bold text-[#293241] font-['Bricolage_Grotesque']">Mobilize Your Network</h3>
                   <p className="text-sm text-[#0A0A0A]/80 leading-relaxed">Set up peer campaigns or corporate giving channels to support our nationwide projects and expansion goals.</p>
                 </div>
+
                 <Link href="/donate" className="inline-flex items-center gap-2 bg-[#00897B] text-white font-bold text-xs uppercase px-4 py-2.5 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#293241] transition-colors">
                   Support the Cause <ArrowUpRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
+
           </div>
         </ScrollReveal>
       </section>
 
-      {/* 5. EVENT GALLERIES (FETCHED FROM gallery_categories) */}
+      {/* 5. EVENT GALLERIES */}
       <section className="max-w-7xl mx-auto px-6 space-y-10">
         <ScrollReveal>
           <div className="space-y-4 border-b-2 border-[#0A0A0A] pb-4">
@@ -323,6 +416,7 @@ export default function HomePage() {
               <span className="text-xs font-bold uppercase tracking-wider bg-[#00897B] text-white px-3 py-1 border border-[#0A0A0A]">Visual Highlights</span>
               <h2 className="text-3xl md:text-4xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] mt-2">Event Galleries</h2>
             </div>
+
             <Link href="/gallery" className="inline-flex items-center gap-2 bg-[#FFFFFE] text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors">
               View More Galleries <ArrowUpRight className="w-4 h-4" />
             </Link>
@@ -348,6 +442,7 @@ export default function HomePage() {
                       <div className="w-full h-full flex items-center justify-center text-xs font-bold uppercase text-white/40">[Gallery Visual]</div>
                     )}
                   </div>
+
                   <div className="p-6 space-y-4">
                     <h3 className="text-xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug">{gallery.title}</h3>
                     {gallery.description && (
@@ -372,6 +467,7 @@ export default function HomePage() {
               <span className="text-xs font-bold uppercase tracking-wider bg-[#C62828] text-white px-3 py-1 border border-[#0A0A0A]">Updates</span>
               <h2 className="text-3xl md:text-4xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] tracking-tight mt-2">News & Articles</h2>
             </div>
+
             <Link href="/news" className="inline-flex items-center gap-2 bg-[#FFFFFE] text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors">
               View More News <ArrowUpRight className="w-4 h-4" />
             </Link>
@@ -397,6 +493,7 @@ export default function HomePage() {
                       <div className="w-full h-full flex items-center justify-center text-xs font-bold uppercase text-white/40">[News Visual]</div>
                     )}
                   </div>
+
                   <div className="flex flex-col justify-between flex-grow space-y-3">
                     <div className="space-y-2">
                       <span className="text-xs font-medium text-[#0A0A0A]/60 block">
@@ -404,6 +501,7 @@ export default function HomePage() {
                       </span>
                       <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug">{item.title}</h3>
                     </div>
+
                     <div className="pt-2">
                       <Link href={`/news/${item.slug}`} className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] hover:text-[#0A0A0A] transition-colors underline underline-offset-4">
                         Read More &rarr;
@@ -425,6 +523,7 @@ export default function HomePage() {
               <span className="text-xs font-bold uppercase tracking-wider bg-[#00897B] text-white px-2.5 py-1 border border-[#0A0A0A]">Human Voice</span>
               <h2 className="text-3xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] mt-2">Stories of Impact</h2>
             </div>
+
             <Link href="/stories" className="inline-flex items-center gap-2 bg-[#FFFFFE] text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors">
               View More Stories <ArrowUpRight className="w-4 h-4" />
             </Link>
@@ -450,16 +549,19 @@ export default function HomePage() {
                       <div className="w-full h-full flex items-center justify-center text-xs font-bold uppercase text-white/40">[Story Visual]</div>
                     )}
                   </div>
+
                   <div className="p-5 space-y-3 flex flex-col flex-grow justify-between">
                     <div className="space-y-2">
                       <h3 className="text-lg font-bold text-[#293241] font-['Bricolage_Grotesque'] line-clamp-2">{story.title}</h3>
                       <p className="text-xs text-[#0A0A0A]/80 line-clamp-2 leading-relaxed">{story.excerpt}</p>
                     </div>
+
                     <Link
                       href={`/stories/${story.slug}`}
                       className="inline-flex items-center justify-between w-full bg-[#C62828] text-white font-bold text-[11px] uppercase px-3 py-2 border-2 border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] hover:bg-[#293241] transition-colors"
                     >
-                      <span>Read Story</span> <ArrowUpRight className="w-3.5 h-3.5" />
+                      <span>Read Story</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 </div>
@@ -477,6 +579,7 @@ export default function HomePage() {
               <span className="text-xs font-bold uppercase tracking-wider bg-[#C62828] text-white px-3 py-1 border border-[#0A0A0A]">Got Questions?</span>
               <h2 className="text-3xl md:text-4xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] mt-2">Frequently Asked Questions</h2>
             </div>
+
             <Link href="/faq" className="inline-flex items-center gap-2 bg-[#FFFFFE] text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors">
               View More FAQs <ArrowUpRight className="w-4 h-4" />
             </Link>
@@ -487,6 +590,7 @@ export default function HomePage() {
           <div className="space-y-4">
             {faqs.map((faq, index) => {
               const isOpen = openFaq === index;
+
               return (
                 <div key={index} className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden">
                   <button
@@ -494,10 +598,12 @@ export default function HomePage() {
                     className="w-full p-5 text-left flex justify-between items-center gap-4 font-extrabold text-[#293241] font-['Bricolage_Grotesque'] text-lg hover:bg-[#F4F1EA] transition-colors"
                   >
                     <span>{faq.question}</span>
+
                     <div className={`p-1 border border-[#0A0A0A] bg-[#C62828] text-white transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
                       <ChevronDown className="w-5 h-5" />
                     </div>
                   </button>
+
                   {isOpen && (
                     <div className="p-5 pt-0 border-t-2 border-[#0A0A0A]/10 text-sm text-[#0A0A0A]/80 leading-relaxed font-medium">
                       {faq.answer}

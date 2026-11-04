@@ -8,17 +8,26 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+declare global {
+  interface Window {
+    FlutterwaveCheckout?: (config: any) => void;
+  }
+}
+
 export default function DonatePage() {
   const [activeTab, setActiveTab] = useState<'online' | 'transfer'>('online');
   const [settings, setSettings] = useState({
-    ngn_bank_name: 'First Bank',
-    ngn_account: '5072049395',
-    usd_bank_name: 'Zenith Bank',
-    usd_account: '2046092805',
+    ngn_bank_name: 'PARALLEX BANK',
+    ngn_account_name: 'CHINEMEREM PATRICK NWANKPA',
+    ngn_account: '2000674970',
+    usd_bank_name: 'PARALLEX BANK',
+    usd_account_name: 'CHINEMEREM PATRICK NWANKPA',
+    usd_account: '2000674970',
     support_email: 'debiekaunafoundation@gmail.com',
   });
 
   // Online Checkout Form State
+  const [currency, setCurrency] = useState<'NGN' | 'USD' | 'GBP'>('NGN');
   const [amount, setAmount] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -39,23 +48,49 @@ export default function DonatePage() {
 
   useEffect(() => {
     fetchSettings();
+
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
+        if (name) {
+          setFullName(name);
+          setTransferName(name);
+        }
+        if (user.email) {
+          setEmail(user.email);
+          setTransferEmail(user.email);
+        }
+      }
+    }
+    loadUser();
+
+    if (!document.getElementById('flutterwave-script')) {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.flutterwave.com/v3.js';
+      script.async = true;
+      script.id = 'flutterwave-script';
+      document.body.appendChild(script);
+    }
   }, []);
 
   async function fetchSettings() {
-    const { data, error } = await supabase.from('settings').select('*');
+    const { data, error } = await supabase.from('settings').select('*').limit(1).single();
     if (error) {
-      console.error('Error fetching settings:', error);
+      console.error('Error fetching settings, using fallbacks:', error);
     } else if (data) {
-      const map: any = {};
-      data.forEach((item) => {
-        map[item.key] = item.value;
-      });
+      const fallbackName = data.account_name || 'CHINEMEREM PATRICK NWANKPA';
+      const fallbackAccount = data.account_number || data.account || '2000674970';
+      const fallbackBank = data.bank_name || 'PARALLEX BANK';
+
       setSettings({
-        ngn_bank_name: map['ngn_bank_name'] || 'First Bank',
-        ngn_account: map['ngn_account'] || '5072049395',
-        usd_bank_name: map['usd_bank_name'] || 'Zenith Bank',
-        usd_account: map['usd_account'] || '2046092805',
-        support_email: map['support_email'] || 'debiekaunafoundation@gmail.com',
+        ngn_bank_name: data.ngn_bank_name || fallbackBank,
+        ngn_account_name: data.ngn_account_name || fallbackName,
+        ngn_account: data.ngn_account || fallbackAccount,
+        usd_bank_name: data.usd_bank_name || fallbackBank,
+        usd_account_name: data.usd_account_name || fallbackName,
+        usd_account: data.usd_account || fallbackAccount,
+        support_email: data.support_email || 'debiekaunafoundation@gmail.com',
       });
     }
   }
@@ -73,25 +108,69 @@ export default function DonatePage() {
       return;
     }
 
+    if (!window.FlutterwaveCheckout) {
+      alert('Payment gateway is still loading. Please wait a moment and try again.');
+      return;
+    }
+
     setIsProcessing(true);
+
     try {
-      const { error } = await supabase.from('donations').insert([
-        {
-          donor_name: fullName,
-          email,
-          phone,
-          amount: parseFloat(amount),
-          currency: 'NGN',
-          purpose,
-          payment_status: 'pending',
-        },
-      ]);
+      const { data, error } = await supabase
+        .from('donations')
+        .insert([
+          {
+            donor_name: fullName,
+            email,
+            phone,
+            amount: parseFloat(amount),
+            currency: currency,
+            purpose,
+            payment_status: 'pending',
+          },
+        ])
+        .select('id')
+        .single();
 
       if (error) throw error;
-      alert(`Initiating online checkout for ₦${Number(amount).toLocaleString()}...`);
+      const donationId = data?.id;
+
+      window.FlutterwaveCheckout({
+        public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY!,
+        tx_ref: `txn-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        amount: parseFloat(amount),
+        currency: currency,
+        payment_options: 'card, banktransfer, ussd',
+        customer: { email, phonenumber: phone, name: fullName },
+        customizations: {
+          title: 'Debiekauna Foundation',
+          description: purpose || 'Donation',
+          logo: 'https://st2.depositphotos.com/4403296/7418/v/450/depositphotos_74189661-stock-illustration-photo-comes-here.jpg',
+        },
+        callback: async (response: any) => {
+          if (response.status === 'successful') {
+            if (donationId) {
+              await supabase
+                .from('donations')
+                .update({ payment_status: 'paid', transaction_id: response.transaction_id })
+                .eq('id', donationId);
+            }
+            const symbol = currency === 'NGN' ? '₦' : currency === 'USD' ? '$' : '£';
+            alert(`Payment Successful! Thank you for your donation of ${symbol}${Number(amount).toLocaleString()}.`);
+            
+            setAmount('');
+            setPurpose('General Foundation Support');
+          } else {
+            alert('Payment was not completed. Please try again.');
+          }
+          setIsProcessing(false);
+        },
+        onclose: () => {
+          setIsProcessing(false);
+        }
+      });
     } catch (err: any) {
       alert('Error recording donation: ' + err.message);
-    } finally {
       setIsProcessing(false);
     }
   }
@@ -117,10 +196,7 @@ export default function DonatePage() {
       ]);
 
       if (error) throw error;
-
       setReceiptSubmitted(true);
-      setTransferName('');
-      setTransferEmail('');
       setTransferAmount('');
     } catch (err: any) {
       alert('Failed to submit transfer notification: ' + err.message);
@@ -128,6 +204,18 @@ export default function DonatePage() {
       setSubmittingReceipt(false);
     }
   }
+
+  const getSymbol = () => {
+    if (currency === 'NGN') return '₦';
+    if (currency === 'USD') return '$';
+    return '£';
+  };
+
+  const getPresets = () => {
+    if (currency === 'NGN') return ['10000', '50000', '250000', '500000', '1000000'];
+    if (currency === 'USD') return ['50', '100', '250', '500', '1000'];
+    return ['50', '100', '250', '500', '1000'];
+  };
 
   return (
     <div className="min-h-screen bg-[#F4F1EA] py-12 px-4 md:px-8 text-[#0A0A0A]">
@@ -166,30 +254,53 @@ export default function DonatePage() {
 
         {activeTab === 'online' && (
           <div className="bg-[#FFFFFE] border-2 border-[#0A0A0A] p-6 md:p-10 shadow-[8px_8px_0px_#0A0A0A]">
-            <h2 className="text-2xl font-bold font-['Bricolage_Grotesque'] text-[#293241] mb-6 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#C62828]" /> Secure Instant Contribution
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b-2 border-[#0A0A0A]">
+              <h2 className="text-2xl font-bold font-['Bricolage_Grotesque'] text-[#293241] flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#C62828]" /> Secure Instant Contribution
+              </h2>
+              
+              <div className="flex items-center gap-1 bg-[#F4F1EA] p-1.5 border-2 border-[#0A0A0A] overflow-x-auto">
+                <span className="text-[10px] font-bold uppercase px-1 text-gray-600">Currency:</span>
+                {(['NGN', 'USD', 'GBP'] as const).map((curr) => (
+                  <button
+                    key={curr}
+                    type="button"
+                    onClick={() => { 
+                      setCurrency(curr); 
+                      setAmount(''); 
+                    }}
+                    className={`px-2.5 py-1 text-xs font-bold uppercase border border-[#0A0A0A] transition-all ${
+                      currency === curr ? 'bg-[#C62828] text-white shadow-[2px_2px_0px_#0A0A0A]' : 'bg-white text-[#293241]'
+                    }`}
+                  >
+                    {curr} ({curr === 'NGN' ? '₦' : curr === 'USD' ? '$' : '£'})
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <form onSubmit={handleOnlineDonate} className="space-y-6">
               <div>
-                <label className="block text-xs font-bold uppercase mb-2 text-gray-700">Select or Enter Amount (₦)</label>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  {['5000', '10000', '50000'].map((preset) => (
+                <label className="block text-xs font-bold uppercase mb-2 text-gray-700">
+                  Select or Enter Amount ({getSymbol()})
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
+                  {getPresets().map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setAmount(preset)}
-                      className={`py-3 border-2 border-[#0A0A0A] font-bold text-sm transition-all ${
+                      className={`py-3 px-2 border-2 border-[#0A0A0A] font-bold text-xs sm:text-sm transition-all ${
                         amount === preset ? 'bg-[#C62828] text-white shadow-[2px_2px_0px_#0A0A0A]' : 'bg-[#F4F1EA] text-[#293241] hover:bg-gray-200'
                       }`}
                     >
-                      ₦{Number(preset).toLocaleString()}
+                      {getSymbol()}{Number(preset).toLocaleString()}
                     </button>
                   ))}
                 </div>
                 <input
                   type="number"
-                  placeholder="Custom amount..."
+                  placeholder={`Custom ${currency} amount...`}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="w-full p-4 border-2 border-[#0A0A0A] bg-[#F4F1EA] font-medium focus:outline-none focus:border-[#C62828]"
@@ -249,7 +360,7 @@ export default function DonatePage() {
                 disabled={isProcessing}
                 className="w-full bg-[#C62828] text-white font-bold py-4 px-8 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all uppercase text-sm disabled:opacity-50"
               >
-                {isProcessing ? 'Initializing Gateway...' : `Proceed to Pay ₦${amount ? Number(amount).toLocaleString() : '0'}`}
+                {isProcessing ? 'Initializing Gateway...' : `Proceed to Pay ${getSymbol()}${amount ? Number(amount).toLocaleString() : '0'}`}
               </button>
             </form>
           </div>
@@ -266,54 +377,68 @@ export default function DonatePage() {
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Naira Account */}
                 <div className="border-2 border-[#0A0A0A] p-6 bg-[#F4F1EA] space-y-3 shadow-[4px_4px_0px_#0A0A0A]">
                   <span className="bg-[#293241] text-white text-[10px] font-bold uppercase px-2 py-0.5 border border-[#0A0A0A]">
                     Naira Account (NGN)
                   </span>
-                  <div className="space-y-1">
-                    <p className="text-xs text-gray-600 font-bold uppercase">{settings.ngn_bank_name} (Naira Account)</p>
-                    <div className="flex items-center justify-between bg-white p-3 border-2 border-[#0A0A0A]">
-                      <span className="font-mono font-bold text-lg text-[#293241]">{settings.ngn_account}</span>
-                      <button
-                        onClick={() => copyToClipboard(settings.ngn_account, 'ngn')}
-                        className="bg-[#C62828] text-white p-2 border border-[#0A0A0A] hover:bg-[#a52222] transition-all"
-                        title="Copy Account Number"
-                      >
-                        {copiedField === 'ngn' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </button>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-[11px] text-gray-500 font-bold uppercase">Bank Name</p>
+                      <p className="text-xs font-extrabold text-[#293241]">{settings.ngn_bank_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-gray-500 font-bold uppercase">Account Name</p>
+                      <p className="text-xs font-extrabold text-[#293241]">{settings.ngn_account_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-gray-500 font-bold uppercase mb-1">Account Number</p>
+                      <div className="flex items-center justify-between bg-white p-3 border-2 border-[#0A0A0A]">
+                        <span className="font-mono font-bold text-lg text-[#293241]">{settings.ngn_account}</span>
+                        <button
+                          onClick={() => copyToClipboard(settings.ngn_account, 'ngn')}
+                          className="bg-[#C62828] text-white p-2 border border-[#0A0A0A] hover:bg-[#a52222] transition-all"
+                          title="Copy Account Number"
+                        >
+                          {copiedField === 'ngn' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Dollar Account */}
                 <div className="border-2 border-[#0A0A0A] p-6 bg-[#F4F1EA] space-y-3 shadow-[4px_4px_0px_#0A0A0A]">
                   <span className="bg-[#293241] text-white text-[10px] font-bold uppercase px-2 py-0.5 border border-[#0A0A0A]">
                     Dollar Account (USD)
                   </span>
-                  <div className="space-y-1">
-                    <p className="text-xs text-gray-600 font-bold uppercase">{settings.usd_bank_name} (Dollar Account)</p>
-                    <div className="flex items-center justify-between bg-white p-3 border-2 border-[#0A0A0A]">
-                      <span className="font-mono font-bold text-lg text-[#293241]">{settings.usd_account}</span>
-                      <button
-                        onClick={() => copyToClipboard(settings.usd_account, 'usd')}
-                        className="bg-[#C62828] text-white p-2 border border-[#0A0A0A] hover:bg-[#a52222] transition-all"
-                        title="Copy Account Number"
-                      >
-                        {copiedField === 'usd' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </button>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-[11px] text-gray-500 font-bold uppercase">Bank Name</p>
+                      <p className="text-xs font-extrabold text-[#293241]">{settings.usd_bank_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-gray-500 font-bold uppercase">Account Name</p>
+                      <p className="text-xs font-extrabold text-[#293241]">{settings.usd_account_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-gray-500 font-bold uppercase mb-1">Account Number</p>
+                      <div className="flex items-center justify-between bg-white p-3 border-2 border-[#0A0A0A]">
+                        <span className="font-mono font-bold text-lg text-[#293241]">{settings.usd_account}</span>
+                        <button
+                          onClick={() => copyToClipboard(settings.usd_account, 'usd')}
+                          className="bg-[#C62828] text-white p-2 border border-[#0A0A0A] hover:bg-[#a52222] transition-all"
+                          title="Copy Account Number"
+                        >
+                          {copiedField === 'usd' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Clickable Email Warning Box */}
               <div className="bg-yellow-50 border-2 border-yellow-600 p-4 text-xs font-bold text-yellow-900">
                 💡 <b>Important:</b> Please send your transfer receipts or slip confirmations to our verification address:{' '}
-                <a 
-                  href={`mailto:${settings.support_email}`} 
-                  className="underline font-mono text-blue-700 hover:text-blue-900 ml-1"
-                >
+                <a href={`mailto:${settings.support_email}`} className="underline font-mono text-blue-700 hover:text-blue-900 ml-1">
                   {settings.support_email}
                 </a>
               </div>
@@ -390,6 +515,7 @@ export default function DonatePage() {
                       >
                         <option value="NGN">NGN (Naira)</option>
                         <option value="USD">USD (Dollar)</option>
+                        <option value="GBP">GBP (Pounds)</option>
                       </select>
                     </div>
                   </div>

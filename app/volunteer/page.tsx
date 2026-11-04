@@ -32,8 +32,8 @@ export default function VolunteerPage() {
         <h1 className="text-4xl md:text-6xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] mt-2">
           Volunteer With ELI7
         </h1>
-        <p className="text-lg text-[#0A0A0A]/80 mt-4">
-          Join our network of passionate changemakers on the ground and online.
+        <p className="text-lg text-[#0A0A0A]/80 mt-4 leading-relaxed max-w-2xl mx-auto">
+          We are looking for passionate individuals who understand the vision of what we do and are ready to stand with us. Whether you bring existing skills and talents to the table, or you’re simply driven by a heart to serve and a willingness to learn—there is a place for you here. Even if you feel you don't have experience yet, don't let that hold you back; we are fully committed to training, equipping, and mentoring anyone with the dedication to make an impact. All you need to bring is your commitment.
         </p>
       </div>
 

@@ -29,11 +29,31 @@ export default function AboutPage() {
     
     {
       name: "Mr. John Asowata",
-      role: "Vice Chairperson",
+      role: "Member",
       bio: "Experienced business owner and esteemed pastor in Christ Embassy, combining entrepreneurial acumen with values-driven leadership. Offers seasoned governance oversight, ethical guidance, and strategic counsel to help shape the core direction of the ELI7 Foundation.",
       image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385239/8c41a6b5-cf22-4c08-9eb2-8603853b9789.png"
     },
     {
+      name: "Ngozichukwu (Mary) Okorie",
+      role: "Treasurer",
+      bio: "CEO of Ions Tech Limited with extensive leadership experience in operational efficiency and strategic management. Ensures transparency, accountability, and organizational oversight to support ELI7 Foundation programs.",
+      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385116/46790015-a9ed-4716-9833-4f91614ce243.png"
+    },
+        {
+      name: "Ngozichukwu (Mary) Okorie",
+      role: "Treasurer",
+      bio: "CEO of Ions Tech Limited with extensive leadership experience in operational efficiency and strategic management. Ensures transparency, accountability, and organizational oversight to support ELI7 Foundation programs.",
+      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385116/46790015-a9ed-4716-9833-4f91614ce243.png"
+    },
+
+        {
+      name: "Ngozichukwu (Mary) Okorie",
+      role: "Treasurer",
+      bio: "CEO of Ions Tech Limited with extensive leadership experience in operational efficiency and strategic management. Ensures transparency, accountability, and organizational oversight to support ELI7 Foundation programs.",
+      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385116/46790015-a9ed-4716-9833-4f91614ce243.png"
+    },
+
+        {
       name: "Ngozichukwu (Mary) Okorie",
       role: "Treasurer",
       bio: "CEO of Ions Tech Limited with extensive leadership experience in operational efficiency and strategic management. Ensures transparency, accountability, and organizational oversight to support ELI7 Foundation programs.",

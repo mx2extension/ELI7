@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { ShieldCheck, RefreshCw, Search, CheckCircle, Clock, Trash2, DollarSign, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Search, CheckCircle, Clock, Trash2, DollarSign, ArrowLeft, User } from 'lucide-react';
 import Link from 'next/link';
 
 interface Donation {
@@ -11,6 +11,7 @@ interface Donation {
   email: string;
   phone: string;
   amount: number;
+  currency?: string; // Added currency support
   purpose: string;
   recurring_frequency: string;
   payment_status: string;
@@ -22,6 +23,15 @@ export default function AdminDonationsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [accountName, setAccountName] = useState<string>('Administrator');
+
+  const fetchUserData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Administrator';
+      setAccountName(name);
+    }
+  };
 
   const fetchDonations = async () => {
     setLoading(true);
@@ -37,6 +47,7 @@ export default function AdminDonationsPage() {
   };
 
   useEffect(() => {
+    fetchUserData();
     fetchDonations();
   }, []);
 
@@ -71,6 +82,14 @@ export default function AdminDonationsPage() {
     return matchesSearch && matchesStatus;
   });
 
+  // Helper function to get correct symbol
+  const getSymbol = (curr?: string) => {
+    if (curr === 'USD') return '$';
+    if (curr === 'GBP') return '£';
+    return '₦';
+  };
+
+  // Note: Total raised summary card aggregates amounts; keeping NGN or standard format as primary revenue aggregate
   const totalRaised = donations
     .filter(d => d.payment_status === 'completed' || d.payment_status === 'success')
     .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
@@ -78,7 +97,7 @@ export default function AdminDonationsPage() {
   return (
     <div className="min-h-screen py-12 px-4 md:px-8 max-w-7xl mx-auto space-y-8 bg-[#F4F1EA]">
       
-      {/* Header with Back Button */}
+      {/* Header with Back Button and Account Name */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#FFFFFE] p-6 md:p-8 border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A]">
         <div className="space-y-1">
           <Link href="/admin/dashboard" className="inline-flex items-center gap-1 text-xs font-bold uppercase text-[#00897B] hover:underline mb-2">
@@ -87,6 +106,9 @@ export default function AdminDonationsPage() {
           <h1 className="text-3xl md:text-4xl font-extrabold font-['Bricolage_Grotesque'] text-[#293241]">
             Donations Management
           </h1>
+          <div className="flex items-center gap-2 pt-1 text-sm font-bold text-[#0A0A0A]/70">
+            <User className="w-4 h-4 text-[#00897B]" /> Signed in as: <span className="text-[#293241]">{accountName}</span>
+          </div>
         </div>
 
         <button 
@@ -101,7 +123,7 @@ export default function AdminDonationsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] p-6 space-y-2">
           <div className="text-xs font-bold uppercase text-[#0A0A0A]/60 flex items-center gap-1">
-            <DollarSign className="w-4 h-4 text-[#00897B]" /> Total Confirmed Revenue
+            <DollarSign className="w-4 h-4 text-[#00897B]" /> Total Confirmed Volume (NGN Base)
           </div>
           <div className="text-3xl font-black font-['Bricolage_Grotesque'] text-[#293241]">
             ₦{totalRaised.toLocaleString()}
@@ -188,7 +210,8 @@ export default function AdminDonationsPage() {
                       <div className="text-xs text-gray-500">{item.phone || 'No phone provided'}</div>
                     </td>
                     <td className="p-4 font-black text-base text-[#C62828]">
-                      ₦{Number(item.amount || 0).toLocaleString()}
+                      {/* Dynamically renders £, $, or ₦ based on item.currency */}
+                      {getSymbol(item.currency)}{Number(item.amount || 0).toLocaleString()} {item.currency ? `(${item.currency})` : ''}
                     </td>
                     <td className="p-4 text-xs font-bold uppercase text-[#00897B]">
                       {item.purpose}

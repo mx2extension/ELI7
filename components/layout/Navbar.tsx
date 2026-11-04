@@ -74,7 +74,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-12 h-12 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Image
-              src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787218188/logo_os2s3d.png"
+              src="https://res.cloudinary.com/drnrbfltr/image/upload/v1793762135/a_clean_vector_style_sticker_emoji_illustration_on_bnu77d.png"
               alt="Extend Love Initiative Logo"
               width={48}
               height={48}
@@ -108,7 +108,7 @@ export default function Navbar() {
             className="bg-[#C62828] text-white font-bold text-sm px-5 py-2.5 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#0A0A0A] transition-all flex items-center gap-2"
           >
             <Heart className="w-4 h-4 fill-current" />
-            Donate
+            Donate Now
           </Link>
         </div>
 
