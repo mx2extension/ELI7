@@ -16,14 +16,14 @@ export default function AboutPage() {
     {
       name: "Amarachi Sunday",
       role: "Executive Director",
-      bio: "Founder and President of Style by Ammie and Director of Operations at the Eli7 Foundation, specializing in strategic program management and operational execution. Acts as the primary anchor for organizational workflows, leveraging extensive management expertise to scale grassroots impact and drive foundation initiatives forward.",
+      bio: "President of ALN and a Hospitality Management professional specializing in strategic program management and operational execution. Acts as the primary anchor for organizational workflows, leveraging extensive management expertise to scale grassroots impact and drive strategic initiatives forward.",
       image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787737369/d2ab0c13-fa51-4d64-b2a3-765caa32c239.png"
     },
 
     {
       name: "Deborah Birdling Bubwa",
       role: "Chairperson",
-      bio: "Founder of the Debbie Kauna Foundation with extensive experience in community leadership and philanthropic development. Brings a deep commitment to grassroots empowerment and institutional growth, helping guide the strategic vision and outreach efforts of the ELI7 Foundation.",
+      bio: "Founder and Executive Director of the Debbie Kauna Foundation, bringing over 8 years of dedicated service to advancing total inclusion for persons with disabilities, with a primary focus on empowering women and girls. A veteran advocate for accessible social growth, she provides strategic board governance and inclusive policy direction.",
       image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787384464/67b681d8-8c2b-4457-848e-25f523ac1df9.png"
     },
     
@@ -33,11 +33,33 @@ export default function AboutPage() {
       bio: "Experienced business owner and esteemed pastor in Christ Embassy, combining entrepreneurial acumen with values-driven leadership. Offers seasoned governance oversight, ethical guidance, and strategic counsel to help shape the core direction of the ELI7 Foundation.",
       image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385239/8c41a6b5-cf22-4c08-9eb2-8603853b9789.png"
     },
+
     {
-      name: "Ngozichukwu (Mary) Okorie",
-      role: "Treasurer",
-      bio: "CEO of Ions Tech Limited with extensive leadership experience in operational efficiency and strategic management. Ensures transparency, accountability, and organizational oversight to support ELI7 Foundation programs.",
-      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385116/46790015-a9ed-4716-9833-4f91614ce243.png"
+      name: "Dr. Mohammed Ladan",
+      role: "Member",
+      bio: "Director of Planning in Bauchi State, bringing extensive expertise in public policy, regional development, and strategic administration. Offers specialized insights into local governmental frameworks and sustainable community planning to strengthen the governance and outreach capacity of the ELI7 Foundation.",
+      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787384970/90a0c337-4893-442e-8c08-5d792ad7e970.png"
+    },
+
+        {
+      name: "Dr. Teresa Umanah, DBH, MSHP",
+      role: "Member",
+      bio: "Executive leader at Vista Del Mar Child and Family Services and Doctor of Behavioral Health specializing in integrated care, health equity, and developmental disabilities advocacy. Leverages extensive global healthcare research and high-impact advocacy experience to provide strategic governance and advance ELI7 Foundation programs.",
+      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385089/75a74f4b-4268-4edd-aab2-cc0245ef49c3.png"
+    },
+
+     {
+      name: "Laura Chappell",
+      role: "Member",
+      bio: "Founder of Youthority and Kon-X, author, and safety tech advocate dedicated to building secure digital environments that protect privacy and youth wellbeing. Brings innovative perspectives on safety-by-design and empowering advocacy to help shape the governance and community strategies of the ELI7 Foundation.",
+      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385989/d770d6d5-a000-4729-9d9c-95e836b9712e.png"
+    },
+
+    {
+      name: "Munachi Nwauzor",
+      role: "Vice Chairperson",
+      bio: "Co-Founder of FindOneCampus with over 5+ years of experience in emerging technologies, AI systems, and digital development. Passionate about innovation, He actively leads and shapes tech-driven initiatives, bringing practical expertise and strategic direction to advance the foundation's mission.",
+      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1793938039/ef78ed95-8c36-4045-9bf0-9f8ce1a4b4fe.png"
     },
         {
       name: "Ngozichukwu (Mary) Okorie",
@@ -47,17 +69,10 @@ export default function AboutPage() {
     },
 
         {
-      name: "Ngozichukwu (Mary) Okorie",
-      role: "Treasurer",
-      bio: "CEO of Ions Tech Limited with extensive leadership experience in operational efficiency and strategic management. Ensures transparency, accountability, and organizational oversight to support ELI7 Foundation programs.",
-      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385116/46790015-a9ed-4716-9833-4f91614ce243.png"
-    },
-
-        {
-      name: "Ngozichukwu (Mary) Okorie",
-      role: "Treasurer",
-      bio: "CEO of Ions Tech Limited with extensive leadership experience in operational efficiency and strategic management. Ensures transparency, accountability, and organizational oversight to support ELI7 Foundation programs.",
-      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1787385116/46790015-a9ed-4716-9833-4f91614ce243.png"
+      name: "Abdulkareem Taiye",
+      role: "Secretary",
+      bio: "Taxation background with focused expertise in administrative structure, record management, and compliance. Ensures financial accountability and operational transparency to drive organizational programs.",
+      image: "https://res.cloudinary.com/drnrbfltr/image/upload/v1793937392/5dab76e3-c460-4409-818e-3b5d9c83ea34.png"
     }
 
   ];
@@ -79,7 +94,7 @@ export default function AboutPage() {
             </div>
 
             <h1 className="text-4xl md:text-6xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] tracking-tight leading-tight">
-              Extending Love, Dismantling Poverty, and Building Independent Futures
+              Together, We Make Inclusion Real: Extending Love, Dismantling Poverty, and Building Independent Futures
             </h1>
           </div>
         </ScrollReveal>
@@ -255,7 +270,7 @@ export default function AboutPage() {
               Executive Leadership
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#293241] font-['Bricolage_Grotesque']">
-              Director of Operations' Note
+              Director's Message
             </h2>
           </div>
         </ScrollReveal>
@@ -264,7 +279,7 @@ export default function AboutPage() {
           <div className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[12px_12px_0px_#0A0A0A] p-6 md:p-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
             <div className="h-80 lg:h-full min-h-[300px] border-2 border-[#0A0A0A] bg-[#00897B] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden">
               <img 
-                src="https://res.cloudinary.com/drnrbfltr/image/upload/v1783866796/3e58da7f-1e04-49a9-9518-7910b7743888.png" 
+                src="https://res.cloudinary.com/drnrbfltr/image/upload/v1793938132/8bdc80dd-5550-4a23-a53d-48f45087ce7d.png" 
                 alt="Amarachi Sunday" 
                 className="w-full h-full object-cover object-top"
               />
@@ -286,7 +301,7 @@ export default function AboutPage() {
 
               <div className="pt-2">
                 <span className="inline-block bg-[#293241] text-white font-bold text-xs uppercase px-3.5 py-1.5 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A]">
-                  — Amarachi Sunday, Director of Operations
+                  — Amarachi Sunday
                 </span>
               </div>
             </div>
