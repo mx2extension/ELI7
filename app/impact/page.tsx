@@ -202,7 +202,7 @@ export default function ImpactPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4 pt-2">
               <Link 
-                href="/partner-with-us"
+                href="/partner"
                 className="bg-[#FFFFFE] text-[#0A0A0A] font-bold text-xs uppercase px-6 py-3.5 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#FFD23F] transition-all flex items-center gap-2"
               >
                 Partner With Us <ArrowUpRight className="w-4 h-4" />

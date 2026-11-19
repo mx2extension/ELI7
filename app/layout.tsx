@@ -8,13 +8,14 @@ import MovingGlobeBg from '@/components/ui/MovingGlobeBg';
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.eli7.ngo'),
   title: {
-    default: 'ELI7 Foundation — Women-led. Youth-centred. Unapologetic.',
+    default: 'ELI7 Foundation — We are a dedicated women-led organization building a framework where vulnerable populations, persons with disabilities, and underserved communities thrive as equal participants in society—especially women and girls—through education, health, economic empowerment and protection. Through your support, we break barriers and build sustainable futures across Nigeria.',
     template: '%s | ELI7 Foundation',
   },
-  description: 'Extend Love Initiative Foundation - Empowering communities, young girls, women, and persons with disabilities through sustainable structures, healthcare, and education across Bauchi State and Nigeria.',
+  description: 'Extend Love Initiative Humanitarian Foundation - Empowering communities, young girls, women, and persons with disabilities through sustainable structures, healthcare, and education across Bauchi State and Nigeria.',
   keywords: [
     'ELI7 Foundation',
     'Extend Love Initiative Foundation',
+    'Extend Love Initiative Humanitarian Foundation',
     'NGO in Bauchi State',
     'Women empowerment Nigeria',
     'Menstrual hygiene campaign',
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     locale: 'en_NG',
     url: 'https://www.eli7.ngo',
     title: 'ELI7 Foundation — Women-led. Youth-centred. Unapologetic.',
-    description: 'Extend Love Initiative Foundation - Empowering communities through healthcare, education, and youth initiatives in Bauchi State, Nigeria.',
+    description: 'Extend Love Initiative Humanitarian Foundation - Empowering communities through healthcare, education, and youth initiatives in Bauchi State, Nigeria.',
     siteName: 'ELI7 Foundation',
     images: [
       {
@@ -48,7 +49,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'ELI7 Foundation — Women-led. Youth-centred. Unapologetic.',
-    description: 'Extend Love Initiative Foundation - Empowering communities through healthcare, education, and youth initiatives.',
+    description: 'Extend Love Initiative Humanitarian Foundation - Empowering communities through healthcare, education, and youth initiatives.',
     images: ['/logo.png'],
   },
   icons: {
@@ -77,7 +78,7 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'NGO',
-    name: 'Extend Love Initiative Foundation (ELI7 Foundation)',
+    name: 'Extend Love Initiative Humanitarian Foundation (ELI7 Foundation)',
     url: 'https://www.eli7.ngo',
     logo: 'https://www.eli7.ngo/logo.png',
     email: 'eli7foundation@gmail.com',

@@ -156,7 +156,7 @@ export default function WorkWeDoPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4 pt-4">
               <Link
-                href="/partner-with-us"
+                href="/partner"
                 className="inline-flex items-center gap-2 bg-[#C62828] text-white font-bold text-sm uppercase px-8 py-4 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#293241] transition-all"
               >
                 Partner With Us <ArrowUpRight className="w-5 h-5" />
