@@ -4,11 +4,21 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import {
-  Heart, CreditCard, Building2, Copy, Check, Send, Sparkles
+  Heart,
+  CreditCard,
+  Building2,
+  Check,
+  Send,
+  Sparkles,
+  Copy,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 declare global {
@@ -17,19 +27,37 @@ declare global {
   }
 }
 
+type DonationSettings = {
+  support_email: string;
+  ngn_bank_name: string;
+  ngn_account_name: string;
+  ngn_account: string;
+  usd_bank_name: string;
+  usd_account_name: string;
+  usd_account: string;
+};
+
+const emptySettings: DonationSettings = {
+  support_email: '',
+  ngn_bank_name: '',
+  ngn_account_name: '',
+  ngn_account: '',
+  usd_bank_name: '',
+  usd_account_name: '',
+  usd_account: '',
+};
+
 export default function DonatePage() {
   const [activeTab, setActiveTab] = useState<'online' | 'transfer'>('online');
 
-  const [settings, setSettings] = useState({
-    ngn_bank_name: 'PARALLEX BANK',
-    ngn_account_name: 'CHINEMEREM PATRICK NWANKPA',
-    ngn_account: '2000674970',
-    usd_bank_name: 'PARALLEX BANK',
-    usd_account_name: 'CHINEMEREM PATRICK NWANKPA',
-    usd_account: '2000674970',
-    support_email: 'eli7@gmail.com',
-  });
+  // SETTINGS FETCHED FROM SUPABASE
+  const [settings, setSettings] = useState<DonationSettings>(emptySettings);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsError, setSettingsError] = useState('');
 
+  const supportEmail = settings.support_email;
+
+  // ONLINE DONATION
   const [currency, setCurrency] = useState<'NGN' | 'USD' | 'GBP'>('NGN');
   const [amount, setAmount] = useState('');
   const [fullName, setFullName] = useState('');
@@ -38,24 +66,34 @@ export default function DonatePage() {
   const [purpose, setPurpose] = useState('General Foundation Support');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // BANK TRANSFER NOTIFICATION
   const [transferName, setTransferName] = useState('');
   const [transferEmail, setTransferEmail] = useState('');
   const [transferAmount, setTransferAmount] = useState('');
   const [transferCurrency, setTransferCurrency] = useState('NGN');
-  const [transferPurpose, setTransferPurpose] = useState('General Foundation Support');
+  const [transferPurpose, setTransferPurpose] = useState(
+    'General Foundation Support'
+  );
+
   const [receiptSubmitted, setReceiptSubmitted] = useState(false);
   const [submittingReceipt, setSubmittingReceipt] = useState(false);
 
+  // COPY ACCOUNT NUMBER
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSettings();
 
     async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (user) {
-        const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
+        const name =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          '';
 
         if (name) {
           setFullName(name);
@@ -73,46 +111,87 @@ export default function DonatePage() {
 
     if (!document.getElementById('flutterwave-script')) {
       const script = document.createElement('script');
+
       script.src = 'https://checkout.flutterwave.com/v3.js';
       script.async = true;
       script.id = 'flutterwave-script';
+
       document.body.appendChild(script);
     }
   }, []);
 
-  async function fetchSettings() {
-    const { data, error } = await supabase
-      .from('settings')
-      .select('*')
-      .limit(1)
-      .single();
+  // ==========================================
+  // FETCH SETTINGS DIRECTLY FROM SUPABASE
+  // ==========================================
 
-    if (error) {
-      console.error('Error fetching settings:', error);
-    } else if (data) {
-      const fallbackName = data.account_name || 'CHINEMEREM PATRICK NWANKPA';
-      const fallbackAccount = data.account_number || data.account || '2000674970';
-      const fallbackBank = data.bank_name || 'PARALLEX BANK';
+  async function fetchSettings() {
+    setSettingsLoading(true);
+    setSettingsError('');
+
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('key, value');
+
+      if (error) throw error;
+
+      const settingsMap: Record<string, string> = {};
+
+      (data || []).forEach((item) => {
+        settingsMap[item.key] = item.value;
+      });
 
       setSettings({
-        ngn_bank_name: data.ngn_bank_name || fallbackBank,
-        ngn_account_name: data.ngn_account_name || fallbackName,
-        ngn_account: data.ngn_account || fallbackAccount,
-        usd_bank_name: data.usd_bank_name || fallbackBank,
-        usd_account_name: data.usd_account_name || fallbackName,
-        usd_account: data.usd_account || fallbackAccount,
-        support_email: data.support_email || 'eli7@gmail.com',
+        support_email: settingsMap['support_email'] || '',
+
+        ngn_bank_name: settingsMap['ngn_bank_name'] || '',
+        ngn_account_name: settingsMap['ngn_account_name'] || '',
+        ngn_account: settingsMap['ngn_account'] || '',
+
+        usd_bank_name: settingsMap['usd_bank_name'] || '',
+        usd_account_name: settingsMap['usd_account_name'] || '',
+        usd_account: settingsMap['usd_account'] || '',
       });
+
+    } catch (error: any) {
+      console.error('Error fetching foundation settings:', error);
+
+      setSettingsError(
+        error.message || 'Unable to retrieve foundation account details.'
+      );
+    } finally {
+      setSettingsLoading(false);
     }
   }
 
-  function copyToClipboard(text: string, field: string) {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2500);
+  // ==========================================
+  // COPY BANK ACCOUNT NUMBER
+  // ==========================================
+
+  async function copyAccountNumber(
+    accountNumber: string,
+    field: string
+  ) {
+    try {
+      await navigator.clipboard.writeText(accountNumber);
+
+      setCopiedField(field);
+
+      setTimeout(() => {
+        setCopiedField(null);
+      }, 2500);
+
+    } catch (error) {
+      console.error('Copy failed:', error);
+      alert('Unable to copy account number. Please copy it manually.');
+    }
   }
 
-  async function handleOnlineDonate(e: React.FormEvent) {
+  // ==========================================
+  // ONLINE DONATION / FLUTTERWAVE
+  // ==========================================
+
+  async function handleOnlineDonate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!amount || !fullName || !email) {
@@ -130,15 +209,17 @@ export default function DonatePage() {
     try {
       const { data, error } = await supabase
         .from('donations')
-        .insert([{
-          donor_name: fullName,
-          email,
-          phone,
-          amount: parseFloat(amount),
-          currency,
-          purpose,
-          payment_status: 'pending',
-        }])
+        .insert([
+          {
+            donor_name: fullName,
+            email,
+            phone,
+            amount: parseFloat(amount),
+            currency,
+            purpose,
+            payment_status: 'pending',
+          },
+        ])
         .select('id')
         .single();
 
@@ -148,9 +229,12 @@ export default function DonatePage() {
 
       window.FlutterwaveCheckout({
         public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY!,
+
         tx_ref: `txn-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+
         amount: parseFloat(amount),
         currency,
+
         payment_options: 'card, banktransfer, ussd',
 
         customer: {
@@ -177,7 +261,12 @@ export default function DonatePage() {
                 .eq('id', donationId);
             }
 
-            const symbol = currency === 'NGN' ? '₦' : currency === 'USD' ? '$' : '£';
+            const symbol =
+              currency === 'NGN'
+                ? '₦'
+                : currency === 'USD'
+                  ? '$'
+                  : '£';
 
             alert(
               `Payment Successful! Thank you for your donation of ${symbol}${Number(amount).toLocaleString()}.`
@@ -185,6 +274,7 @@ export default function DonatePage() {
 
             setAmount('');
             setPurpose('General Foundation Support');
+
           } else {
             alert('Payment was not completed. Please try again.');
           }
@@ -196,13 +286,20 @@ export default function DonatePage() {
           setIsProcessing(false);
         },
       });
+
     } catch (err: any) {
       alert('Error recording donation: ' + err.message);
       setIsProcessing(false);
     }
   }
 
-  async function handleTransferNotification(e: React.FormEvent) {
+  // ==========================================
+  // BANK TRANSFER NOTIFICATION
+  // ==========================================
+
+  async function handleTransferNotification(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
     e.preventDefault();
 
     if (!transferName || !transferEmail || !transferAmount) {
@@ -215,25 +312,33 @@ export default function DonatePage() {
     try {
       const { error } = await supabase
         .from('donations')
-        .insert([{
-          donor_name: transferName,
-          email: transferEmail,
-          amount: parseFloat(transferAmount),
-          currency: transferCurrency,
-          purpose: transferPurpose,
-          payment_status: 'pending',
-        }]);
+        .insert([
+          {
+            donor_name: transferName,
+            email: transferEmail,
+            amount: parseFloat(transferAmount),
+            currency: transferCurrency,
+            purpose: transferPurpose,
+            payment_status: 'pending',
+          },
+        ]);
 
       if (error) throw error;
 
       setReceiptSubmitted(true);
       setTransferAmount('');
+
     } catch (err: any) {
       alert('Failed to submit transfer notification: ' + err.message);
+
     } finally {
       setSubmittingReceipt(false);
     }
   }
+
+  // ==========================================
+  // CURRENCY HELPERS
+  // ==========================================
 
   const getSymbol = () => {
     if (currency === 'NGN') return '₦';
@@ -249,6 +354,10 @@ export default function DonatePage() {
     return ['50', '100', '250', '500', '1000'];
   };
 
+  // ==========================================
+  // STYLING
+  // ==========================================
+
   const inputStyle =
     'w-full p-3.5 border-2 border-[#0A0A0A] bg-[#F4F1EA] text-[#293241] font-medium text-sm placeholder:text-[#555555] focus:outline-none focus:border-[#C62828] transition-colors';
 
@@ -257,6 +366,139 @@ export default function DonatePage() {
 
   const sectionStyle =
     'border-2 border-[#0A0A0A] p-6 md:p-8 shadow-[6px_6px_0px_#0A0A0A]';
+
+  // ==========================================
+  // BANK ACCOUNT CARD
+  // ==========================================
+
+  function BankAccountCard({
+    title,
+    bankName,
+    accountName,
+    accountNumber,
+    field,
+    currencyLabel,
+  }: {
+    title: string;
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    field: string;
+    currencyLabel: string;
+  }) {
+    const isComplete = Boolean(
+      bankName.trim() &&
+      accountName.trim() &&
+      accountNumber.trim()
+    );
+
+    return (
+      <div className="border-2 border-[#0A0A0A] p-5 bg-transparent space-y-4 shadow-[4px_4px_0px_#0A0A0A]">
+
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-block bg-[#293241] text-white text-[10px] font-bold uppercase px-2.5 py-1 border border-[#0A0A0A]">
+            {title}
+          </span>
+
+          <span className="text-[10px] font-extrabold text-[#00897B]">
+            {currencyLabel}
+          </span>
+        </div>
+
+        {settingsLoading ? (
+          <div className="min-h-[160px] flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-6 h-6 animate-spin text-[#C62828]" />
+            <p className="text-xs font-bold text-gray-500">
+              Loading bank details...
+            </p>
+          </div>
+        ) : isComplete ? (
+          <div className="space-y-4">
+
+            <div>
+              <p className="text-xs font-bold uppercase text-gray-500 mb-1">
+                Bank Name
+              </p>
+
+              <p className="font-extrabold text-lg text-[#293241]">
+                {bankName}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs font-bold uppercase text-gray-500 mb-1">
+                Account Name
+              </p>
+
+              <p className="font-bold text-[#293241]">
+                {accountName}
+              </p>
+            </div>
+
+            <div className="border-2 border-[#0A0A0A] bg-[#F4F1EA] p-4">
+
+              <p className="text-xs font-bold uppercase text-gray-500 mb-2">
+                Account Number
+              </p>
+
+              <div className="flex items-center justify-between gap-2">
+
+                <p className="text-xl sm:text-2xl font-extrabold tracking-wider text-[#293241] break-all">
+                  {accountNumber}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => copyAccountNumber(accountNumber, field)}
+                  className="shrink-0 bg-[#C62828] text-white px-3 py-2 text-xs font-bold border-2 border-[#0A0A0A] hover:bg-[#293241] transition-colors flex items-center gap-1"
+                >
+                  {copiedField === field ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy
+                    </>
+                  )}
+                </button>
+
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-[#00897B] font-bold">
+              <CheckCircle2 className="w-4 h-4" />
+              Official foundation account
+            </div>
+
+          </div>
+        ) : (
+          <div className="border-2 border-[#293241] p-5 bg-transparent space-y-3">
+
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-[#C62828]" />
+              <p className="font-bold text-sm text-[#293241]">
+                Account Details Unavailable
+              </p>
+            </div>
+
+            <p className="text-sm text-[#293241] leading-relaxed">
+              Our {currencyLabel} bank account details are not yet fully
+              configured. Please contact us using the support email below.
+            </p>
+
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
+  // ==========================================
+  // PAGE
+  // ==========================================
 
   return (
     <div className="min-h-screen bg-transparent py-12 px-4 md:px-8 text-[#293241]">
@@ -295,6 +537,7 @@ export default function DonatePage() {
         <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">
 
           <button
+            type="button"
             onClick={() => setActiveTab('online')}
             className={`flex items-center justify-center gap-2 py-3.5 px-3 font-bold text-xs sm:text-sm border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] transition-all ${
               activeTab === 'online'
@@ -307,6 +550,7 @@ export default function DonatePage() {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('transfer')}
             className={`flex items-center justify-center gap-2 py-3.5 px-3 font-bold text-xs sm:text-sm border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] transition-all ${
               activeTab === 'transfer'
@@ -412,6 +656,7 @@ export default function DonatePage() {
 
                 <div>
                   <label className={labelStyle}>Full Name *</label>
+
                   <input
                     type="text"
                     placeholder="Enter your full name"
@@ -424,6 +669,7 @@ export default function DonatePage() {
 
                 <div>
                   <label className={labelStyle}>Email Address *</label>
+
                   <input
                     type="email"
                     placeholder="you@example.com"
@@ -439,7 +685,10 @@ export default function DonatePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                 <div>
-                  <label className={labelStyle}>Phone Number (Optional)</label>
+                  <label className={labelStyle}>
+                    Phone Number (Optional)
+                  </label>
+
                   <input
                     type="tel"
                     placeholder="08000000000"
@@ -451,6 +700,7 @@ export default function DonatePage() {
 
                 <div>
                   <label className={labelStyle}>Donation Purpose</label>
+
                   <input
                     type="text"
                     value={purpose}
@@ -499,121 +749,55 @@ export default function DonatePage() {
 
               </div>
 
+              {/* SETTINGS FETCH ERROR */}
+
+              {settingsError && (
+                <div className="border-2 border-red-600 bg-red-50 p-4 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
+
+                  <div>
+                    <p className="font-bold text-sm text-red-800">
+                      Unable to load bank details
+                    </p>
+
+                    <p className="text-xs text-red-700 mt-1">
+                      {settingsError}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={fetchSettings}
+                      className="mt-3 text-xs font-bold text-red-800 underline"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                 {/* NAIRA ACCOUNT */}
 
-                <div className="border-2 border-[#0A0A0A] p-5 bg-transparent space-y-4 shadow-[4px_4px_0px_#0A0A0A]">
-
-                  <span className="inline-block bg-[#293241] text-white text-[10px] font-bold uppercase px-2.5 py-1 border border-[#0A0A0A]">
-                    Naira Account (NGN)
-                  </span>
-
-                  <div className="space-y-3">
-
-                    <div>
-                      <p className="text-[11px] text-[#293241] font-bold uppercase mb-1">
-                        Bank Name
-                      </p>
-                      <p className="text-sm font-extrabold text-[#293241]">
-                        {settings.ngn_bank_name}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-[11px] text-[#293241] font-bold uppercase mb-1">
-                        Account Name
-                      </p>
-                      <p className="text-sm font-extrabold text-[#293241]">
-                        {settings.ngn_account_name}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-[11px] text-[#293241] font-bold uppercase mb-1">
-                        Account Number
-                      </p>
-
-                      <div className="flex items-center justify-between bg-[#F4F1EA] p-3 border-2 border-[#0A0A0A]">
-
-                        <span className="font-mono font-bold text-lg text-[#293241]">
-                          {settings.ngn_account}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(settings.ngn_account, 'ngn')}
-                          className="bg-[#C62828] text-white p-2 border border-[#0A0A0A] hover:bg-[#293241] transition-all"
-                          title="Copy Account Number"
-                        >
-                          {copiedField === 'ngn'
-                            ? <Check className="w-4 h-4" />
-                            : <Copy className="w-4 h-4" />}
-                        </button>
-
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div>
+                <BankAccountCard
+                  title="Naira Account (NGN)"
+                  currencyLabel="NGN"
+                  bankName={settings.ngn_bank_name}
+                  accountName={settings.ngn_account_name}
+                  accountNumber={settings.ngn_account}
+                  field="ngn"
+                />
 
                 {/* USD ACCOUNT */}
 
-                <div className="border-2 border-[#0A0A0A] p-5 bg-transparent space-y-4 shadow-[4px_4px_0px_#0A0A0A]">
-
-                  <span className="inline-block bg-[#293241] text-white text-[10px] font-bold uppercase px-2.5 py-1 border border-[#0A0A0A]">
-                    Dollar Account (USD)
-                  </span>
-
-                  <div className="space-y-3">
-
-                    <div>
-                      <p className="text-[11px] text-[#293241] font-bold uppercase mb-1">
-                        Bank Name
-                      </p>
-                      <p className="text-sm font-extrabold text-[#293241]">
-                        {settings.usd_bank_name}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-[11px] text-[#293241] font-bold uppercase mb-1">
-                        Account Name
-                      </p>
-                      <p className="text-sm font-extrabold text-[#293241]">
-                        {settings.usd_account_name}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-[11px] text-[#293241] font-bold uppercase mb-1">
-                        Account Number
-                      </p>
-
-                      <div className="flex items-center justify-between bg-[#F4F1EA] p-3 border-2 border-[#0A0A0A]">
-
-                        <span className="font-mono font-bold text-lg text-[#293241]">
-                          {settings.usd_account}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(settings.usd_account, 'usd')}
-                          className="bg-[#C62828] text-white p-2 border border-[#0A0A0A] hover:bg-[#293241] transition-all"
-                          title="Copy Account Number"
-                        >
-                          {copiedField === 'usd'
-                            ? <Check className="w-4 h-4" />
-                            : <Copy className="w-4 h-4" />}
-                        </button>
-
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div>
+                <BankAccountCard
+                  title="Dollar Account (USD)"
+                  currencyLabel="USD"
+                  bankName={settings.usd_bank_name}
+                  accountName={settings.usd_account_name}
+                  accountNumber={settings.usd_account}
+                  field="usd"
+                />
 
               </div>
 
@@ -625,14 +809,29 @@ export default function DonatePage() {
                   Important: Transfer Confirmation
                 </p>
 
-                Please send your transfer receipt or payment confirmation to:
+                After completing your transfer, please use the
+                notification form below to inform our team.
 
-                <a
-                  href={`mailto:${settings.support_email}`}
-                  className="block font-bold underline text-[#C62828] mt-1"
-                >
-                  {settings.support_email}
-                </a>
+                <p className="mt-3 font-bold">
+                  Need assistance?
+                </p>
+
+                {settingsLoading ? (
+                  <p className="text-gray-500 mt-1">
+                    Loading support contact...
+                  </p>
+                ) : supportEmail ? (
+                  <a
+                    href={`mailto:${supportEmail}`}
+                    className="block font-bold underline text-[#C62828] mt-1"
+                  >
+                    {supportEmail}
+                  </a>
+                ) : (
+                  <p className="text-gray-500 mt-1">
+                    Support email currently unavailable.
+                  </p>
+                )}
 
               </div>
 
@@ -678,12 +877,18 @@ export default function DonatePage() {
 
               ) : (
 
-                <form onSubmit={handleTransferNotification} className="space-y-5">
+                <form
+                  onSubmit={handleTransferNotification}
+                  className="space-y-5"
+                >
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                     <div>
-                      <label className={labelStyle}>Your Full Name *</label>
+                      <label className={labelStyle}>
+                        Your Full Name *
+                      </label>
+
                       <input
                         type="text"
                         value={transferName}
@@ -695,7 +900,10 @@ export default function DonatePage() {
                     </div>
 
                     <div>
-                      <label className={labelStyle}>Your Email Address *</label>
+                      <label className={labelStyle}>
+                        Your Email Address *
+                      </label>
+
                       <input
                         type="email"
                         value={transferEmail}
@@ -711,7 +919,10 @@ export default function DonatePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                     <div>
-                      <label className={labelStyle}>Amount Transferred *</label>
+                      <label className={labelStyle}>
+                        Amount Transferred *
+                      </label>
+
                       <input
                         type="number"
                         min="1"
@@ -724,7 +935,10 @@ export default function DonatePage() {
                     </div>
 
                     <div>
-                      <label className={labelStyle}>Currency *</label>
+                      <label className={labelStyle}>
+                        Currency *
+                      </label>
+
                       <select
                         value={transferCurrency}
                         onChange={(e) => setTransferCurrency(e.target.value)}
@@ -740,6 +954,7 @@ export default function DonatePage() {
 
                   <div>
                     <label className={labelStyle}>Purpose</label>
+
                     <input
                       type="text"
                       value={transferPurpose}
@@ -751,11 +966,19 @@ export default function DonatePage() {
                   <button
                     type="submit"
                     disabled={submittingReceipt}
-                    className="bg-[#293241] text-white font-bold py-3.5 px-7 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#C62828] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all uppercase text-xs sm:text-sm disabled:opacity-50"
+                    className="bg-[#293241] text-white font-bold py-3.5 px-7 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#C62828] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all uppercase text-xs sm:text-sm disabled:opacity-50 flex items-center gap-2"
                   >
-                    {submittingReceipt
-                      ? 'Submitting Notification...'
-                      : 'Submit Transfer Confirmation'}
+                    {submittingReceipt ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Submitting Notification...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Submit Transfer Confirmation
+                      </>
+                    )}
                   </button>
 
                 </form>

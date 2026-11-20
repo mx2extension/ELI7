@@ -36,7 +36,7 @@ const faqData: FAQCategory[] = [
       },
       {
         question: 'Who leads the ELI7 Foundation?',
-        answer: 'The foundation is led by Amarachi Sunday (Director of Operations), supported by a diverse Board of Trustees with that align with our organizational goals. The organization is proudly women-led at the executive level.',
+        answer: 'The foundation is led by Amarachi Sunday (Executive Director), supported by a diverse Board of Trustees with that align with our organizational goals. The organization is proudly women-led at the executive level.',
       },
       {
         question: 'Is ELI7 Foundation a registered organization?',
@@ -59,7 +59,7 @@ const faqData: FAQCategory[] = [
       },
       {
         question: 'How is my donation used?',
-        answer: '100% of donations are channeled into program delivery — including food relief packages, sanitary kits, educational materials, digital literacy bootcamps, and healthcare support. We maintain detailed tracking and can provide impact reports upon request.',
+        answer: '100% of donations are channeled into program delivery, fund scholarships, assistive devices for persons with disabilities, vocational training, micro‑grants, healthcare enrolment, emergency relief and everything else that supports our mission in building more inclusive communities. ELI7 prioritises transparency and regularly reports on impact.',
       },
       {
         question: 'Can I specify what my donation funds?',

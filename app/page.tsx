@@ -17,6 +17,7 @@ import {
   Sparkles,
   Quote,
   ChevronDown,
+  Images,
 } from 'lucide-react';
 
 interface PreviewItem {
@@ -27,6 +28,8 @@ interface PreviewItem {
   image_url?: string;
   cover_image_url?: string;
   description?: string;
+  gallery_urls?: string[];
+  event_date?: string;
   created_at: string;
 }
 
@@ -177,7 +180,7 @@ const SUPPORT_CARDS = [
 export default function HomePage() {
   const [latestNews, setLatestNews] = useState<PreviewItem[]>([]);
   const [latestStories, setLatestStories] = useState<PreviewItem[]>([]);
-  const [latestGalleries, setLatestGalleries] = useState<PreviewItem[]>([]);
+  const [latestProjects, setLatestProjects] = useState<PreviewItem[]>([]);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
@@ -187,7 +190,7 @@ export default function HomePage() {
       const [
         { data: news },
         { data: stories },
-        { data: galleries },
+        { data: projects },
       ] = await Promise.all([
         supabase
           .from('news')
@@ -202,8 +205,9 @@ export default function HomePage() {
           .limit(4),
 
         supabase
-          .from('gallery_categories')
-          .select('id, title, slug, description, cover_image_url, created_at')
+          .from('projects')
+          .select('id, title, slug, description, image_url, gallery_urls, event_date, created_at')
+          .order('event_date', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false })
           .limit(3),
       ]);
@@ -212,7 +216,7 @@ export default function HomePage() {
 
       setLatestNews(news || []);
       setLatestStories(stories || []);
-      setLatestGalleries(galleries || []);
+      setLatestProjects(projects || []);
     }
 
     fetchData();
@@ -225,7 +229,7 @@ export default function HomePage() {
   const faqs = [
     {
       question: 'How are financial donations utilized?',
-      answer: 'Every contribution goes directly toward our active community programs, including food welfare distributions, educational material supply, and digital literacy workshops for vulnerable populations across Nigeria.',
+      answer: '100% of donations are channeled into program delivery, fund scholarships, assistive devices for persons with disabilities, vocational training, micro‑grants, healthcare enrolment, emergency relief and everything else that supports our mission in building more inclusive communities. ELI7 prioritises transparency and regularly reports on impact.',
     },
     {
       question: 'Can I volunteer or support remotely?',
@@ -503,17 +507,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. DIRECTOR OF OPERATIONS NOTE */}
+      {/* 4. EXECUTIVE DIRECTOR'S PERSONAL MESSAGE */}
       {/* Separate section: normal document flow, no negative positioning */}
       <section className="relative z-0 w-full max-w-7xl mx-auto px-6 clear-both">
         <ScrollReveal className="w-full">
-          <div className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[12px_12px_0px_#0A0A0A] p-6 md:p-14 relative">
+          <div className="relative isolate overflow-hidden bg-[#FFF7F5] border-2 border-[#0A0A0A] shadow-[12px_12px_0px_#0A0A0A] p-6 md:p-14">
 
-            <div className="absolute top-5 left-5 md:top-7 md:left-7 z-10 bg-[#C62828] text-white border-2 border-[#0A0A0A] p-3 md:p-4 shadow-[4px_4px_0px_#0A0A0A]">
+            {/* Visible heart-led backdrop: warmth and compassion without reducing text contrast */}
+            <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_35%,rgba(198,40,40,0.12),transparent_34%),radial-gradient(circle_at_12%_90%,rgba(238,108,77,0.10),transparent_30%)]" />
+              <Heart className="absolute -right-10 top-8 h-64 w-64 md:h-[27rem] md:w-[27rem] rotate-12 fill-[#C62828]/10 text-[#C62828]/15 stroke-[1.2]" />
+              <Heart className="absolute left-[34%] -bottom-16 h-40 w-40 md:h-56 md:w-56 -rotate-12 fill-[#EE6C4D]/[0.06] text-[#EE6C4D]/10 stroke-[1.2]" />
+              <div className="absolute -right-20 -bottom-28 h-80 w-80 rounded-full border border-[#C62828]/10" />
+              <div className="absolute right-12 top-12 h-32 w-32 rounded-full border border-[#C62828]/10" />
+            </div>
+
+            <div className="absolute top-5 left-5 md:top-7 md:left-7 z-20 bg-[#C62828] text-white border-2 border-[#0A0A0A] p-3 md:p-4 shadow-[4px_4px_0px_#0A0A0A]">
               <Quote className="w-8 h-8" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center pt-16 md:pt-20">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center pt-16 md:pt-20">
 
               <div className="h-80 md:h-96 border-2 border-[#0A0A0A] bg-[#00897B] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden">
                 <img
@@ -527,7 +540,7 @@ export default function HomePage() {
               <div className="lg:col-span-2 space-y-6">
                 <div className="space-y-2 border-b-2 border-[#0A0A0A] pb-4">
                   <span className="inline-block bg-[#C62828] text-white font-bold text-xs uppercase px-2.5 py-1 border border-[#0A0A0A]">
-                    Director of Operations — Executive Leadership Note
+                    Executive Director — A Personal Message
                   </span>
 
                   <h2 className="text-2xl md:text-3xl font-extrabold text-[#293241] font-['Bricolage_Grotesque']">
@@ -639,7 +652,7 @@ export default function HomePage() {
         </ScrollReveal>
       </section>
 
-      {/* 6. EVENT GALLERIES */}
+      {/* 6. PROJECT EVENT GALLERIES */}
       <section className="w-full max-w-7xl mx-auto px-6 space-y-10">
         <ScrollReveal>
           <div className="space-y-4 border-b-2 border-[#0A0A0A] pb-4">
@@ -649,58 +662,87 @@ export default function HomePage() {
               </span>
 
               <h2 className="text-3xl md:text-4xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] mt-2">
-                Event Galleries
+                Project Event Galleries
               </h2>
             </div>
 
-            <Link href="/gallery" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors">
-              View More Galleries <ArrowUpRight className="w-4 h-4" />
-            </Link>
           </div>
         </ScrollReveal>
 
-        {latestGalleries.length === 0 ? (
+        {latestProjects.length === 0 ? (
           <ScrollReveal>
             <div className="bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-12 text-center space-y-3">
-              <p className="text-lg font-bold text-[#293241]">No galleries published yet.</p>
-              <p className="text-sm text-[#0A0A0A]/70">Check back soon for event photos and visual highlights.</p>
+              <p className="text-lg font-bold text-[#293241]">No projects published yet.</p>
+              <p className="text-sm text-[#0A0A0A]/70">Check back soon for project updates and event photographs.</p>
             </div>
           </ScrollReveal>
         ) : (
           <ScrollReveal delay={150}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {latestGalleries.map((gallery) => (
-                <div key={gallery.id} className="bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] flex flex-col justify-between overflow-hidden group">
-                  <div className="h-64 border-b-2 border-[#0A0A0A] bg-[#00897B] overflow-hidden">
-                    {gallery.cover_image_url ? (
-                      <img src={gallery.cover_image_url} alt={gallery.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {latestProjects.map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/projects/${project.slug}`}
+                  aria-label={`View project: ${project.title}`}
+                  className="group w-full min-w-0 bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-4 sm:p-6 md:p-7 flex flex-col sm:flex-row items-stretch gap-5 md:gap-6 overflow-hidden hover:-translate-y-1 hover:shadow-[10px_10px_0px_#0A0A0A] transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00897B]"
+                >
+                  {/* PROJECT IMAGE */}
+                  <div className="w-full h-52 sm:h-auto sm:w-[34%] sm:min-w-[140px] md:min-w-[180px] sm:min-h-[220px] border-2 border-[#0A0A0A] bg-[#00897B] flex-shrink-0 overflow-hidden">
+                    {(project.image_url || project.gallery_urls?.[0]) ? (
+                      <img
+                        src={project.image_url || project.gallery_urls?.[0]}
+                        alt={project.title}
+                        className="w-full h-full min-h-[200px] sm:min-h-[220px] object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs font-bold uppercase text-white/60">
+                      <div className="w-full h-full min-h-[200px] sm:min-h-[220px] flex items-center justify-center text-xs font-bold uppercase text-white/60">
                         Gallery Visual
                       </div>
                     )}
                   </div>
 
-                  <div className="p-6 space-y-4">
-                    <h3 className="text-xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug">
-                      {gallery.title}
+                  {/* PROJECT DETAILS */}
+                  <div className="flex flex-col justify-center flex-grow min-w-0 gap-3 py-2 sm:py-1">
+                    <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug group-hover:text-[#00897B] transition-colors">
+                      {project.title}
                     </h3>
 
-                    {gallery.description && (
-                      <p className="text-sm text-[#0A0A0A]/80 line-clamp-2 leading-relaxed">
-                        {gallery.description}
+                    {project.description && (
+                      <p className="text-sm text-[#0A0A0A]/80 line-clamp-3 leading-relaxed">
+                        {project.description}
                       </p>
                     )}
 
-                    <Link href={`/gallery/${gallery.slug}`} className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] hover:text-[#0A0A0A] underline underline-offset-4">
-                      View More <ArrowUpRight className="w-3.5 h-3.5" />
-                    </Link>
+                    <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-[#0A0A0A]/60 pt-2">
+                      <span>
+                        {new Date(project.event_date || project.created_at).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Images className="w-3.5 h-3.5 text-[#C62828]" />
+                        {new Set([project.image_url, ...(project.gallery_urls || [])].filter(Boolean)).size} photos
+                      </span>
+                    </div>
+
+                    <span className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] underline underline-offset-4 w-fit mt-1">
+                      View Project <ArrowUpRight className="w-3.5 h-3.5" />
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </ScrollReveal>
         )}
+
+        <div className="flex justify-start">
+          <Link href="/projects" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors">
+            View All Projects <ArrowUpRight className="w-4 h-4" />
+          </Link>
+        </div>
       </section>
 
       {/* 7. NEWS & ARTICLES */}
@@ -717,9 +759,6 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <Link href="/news" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors">
-              View More News <ArrowUpRight className="w-4 h-4" />
-            </Link>
           </div>
         </ScrollReveal>
 
@@ -734,10 +773,15 @@ export default function HomePage() {
           <ScrollReveal delay={150}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {latestNews.map((item) => (
-                <div key={item.id} className="bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-6 md:p-8 flex flex-col sm:flex-row gap-6 items-center justify-between">
+                <Link
+                  key={item.id}
+                  href={`/news/${item.slug}`}
+                  aria-label={`Read article: ${item.title}`}
+                  className="group bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-6 md:p-8 flex flex-col sm:flex-row gap-6 items-center justify-between hover:-translate-y-1 hover:shadow-[10px_10px_0px_#0A0A0A] transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00897B]"
+                >
                   <div className="w-full sm:w-48 h-48 sm:h-52 border-2 border-[#0A0A0A] bg-[#00897B] flex-shrink-0 overflow-hidden">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs font-bold uppercase text-white/60">
                         News Visual
@@ -755,20 +799,26 @@ export default function HomePage() {
                         })}
                       </span>
 
-                      <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug">
+                      <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug group-hover:text-[#00897B] transition-colors">
                         {item.title}
                       </h3>
                     </div>
 
-                    <Link href={`/news/${item.slug}`} className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] underline underline-offset-4">
+                    <span className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] underline underline-offset-4">
                       Read More <ArrowUpRight className="w-3.5 h-3.5" />
-                    </Link>
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </ScrollReveal>
         )}
+
+        <div className="flex justify-start">
+          <Link href="/news" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors">
+            View More News <ArrowUpRight className="w-4 h-4" />
+          </Link>
+        </div>
       </section>
 
       {/* 8. STORIES OF IMPACT */}
@@ -785,9 +835,6 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <Link href="/stories" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors">
-              View More Stories <ArrowUpRight className="w-4 h-4" />
-            </Link>
           </div>
         </ScrollReveal>
 
@@ -800,40 +847,65 @@ export default function HomePage() {
           </ScrollReveal>
         ) : (
           <ScrollReveal delay={150}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {latestStories.map((story) => (
-                <div key={story.id} className="bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] flex flex-col justify-between overflow-hidden">
-                  <div className="h-40 border-b-2 border-[#0A0A0A] bg-[#00897B]">
+                <Link
+                  key={story.id}
+                  href={`/stories/${story.slug}`}
+                  aria-label={`Read story: ${story.title}`}
+                  className="group w-full min-w-0 bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-4 sm:p-6 md:p-7 flex flex-col sm:flex-row items-stretch gap-5 md:gap-6 overflow-hidden hover:-translate-y-1 hover:shadow-[10px_10px_0px_#0A0A0A] transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00897B]"
+                >
+                  {/* STORY IMAGE */}
+                  <div className="w-full h-52 sm:h-auto sm:w-[34%] sm:min-w-[140px] md:min-w-[180px] sm:min-h-[220px] border-2 border-[#0A0A0A] bg-[#00897B] flex-shrink-0 overflow-hidden">
                     {story.image_url ? (
-                      <img src={story.image_url} alt={story.title} className="w-full h-full object-cover" loading="lazy" />
+                      <img
+                        src={story.image_url}
+                        alt={story.title}
+                        className="w-full h-full min-h-[200px] sm:min-h-[220px] object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs font-bold uppercase text-white/60">
+                      <div className="w-full h-full min-h-[200px] sm:min-h-[220px] flex items-center justify-center text-xs font-bold uppercase text-white/60">
                         Story Visual
                       </div>
                     )}
                   </div>
 
-                  <div className="p-5 space-y-3 flex flex-col flex-grow justify-between">
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-[#293241] font-['Bricolage_Grotesque'] line-clamp-2">
-                        {story.title}
-                      </h3>
+                  {/* STORY DETAILS */}
+                  <div className="flex flex-col justify-center flex-grow min-w-0 gap-3 py-2 sm:py-1">
+                    <span className="text-xs font-medium text-[#0A0A0A]/60 block">
+                      {new Date(story.created_at).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
 
-                      <p className="text-xs text-[#0A0A0A]/80 line-clamp-2 leading-relaxed">
+                    <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug group-hover:text-[#00897B] transition-colors">
+                      {story.title}
+                    </h3>
+
+                    {story.excerpt && (
+                      <p className="text-sm text-[#0A0A0A]/80 line-clamp-3 leading-relaxed">
                         {story.excerpt}
                       </p>
-                    </div>
+                    )}
 
-                    <Link href={`/stories/${story.slug}`} className="inline-flex items-center justify-between w-full bg-[#C62828] text-white font-bold text-[11px] uppercase px-3 py-2 border-2 border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] hover:bg-[#293241] transition-colors">
-                      <span>Read Story</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    </Link>
+                    <span className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] underline underline-offset-4 w-fit mt-1">
+                      Read Story <ArrowUpRight className="w-3.5 h-3.5" />
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </ScrollReveal>
         )}
+
+        <div className="flex justify-start">
+          <Link href="/stories" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors">
+            View More Stories <ArrowUpRight className="w-4 h-4" />
+          </Link>
+        </div>
       </section>
 
       {/* 9. FAQ */}
@@ -850,9 +922,6 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <Link href="/faq" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors">
-              View More FAQs <ArrowUpRight className="w-4 h-4" />
-            </Link>
           </div>
         </ScrollReveal>
 
@@ -886,6 +955,12 @@ export default function HomePage() {
             })}
           </div>
         </ScrollReveal>
+
+        <div className="flex justify-start">
+          <Link href="/faq" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors">
+            View More FAQs <ArrowUpRight className="w-4 h-4" />
+          </Link>
+        </div>
       </section>
 
     </main>

@@ -74,15 +74,6 @@ export default function Footer() {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleEnvelope = () => {
-    if (!isOpen) {
-      try {
-        const audio = new Audio('/sounds/open.mp3');
-        audio.volume = 0.4;
-        void audio.play();
-      } catch {
-        console.warn('Audio could not be played');
-      }
-    }
     setIsOpen((prev) => !prev);
   };
 
