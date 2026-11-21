@@ -449,14 +449,8 @@ export default function AboutPage() {
 
         <ScrollReveal variant="fade-up">
           <div className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[12px_12px_0px_#0A0A0A] p-4 md:p-8">
-            <div className="w-full aspect-video border-2 border-[#0A0A0A] bg-[#293241] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden relative flex items-center justify-center">
-              <iframe 
-                className="w-full h-full absolute inset-0"
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                title="ELI7 Foundation Impact Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
+            <div className="w-full aspect-video border-2 border-[#0A0A0A] bg-[#293241] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden relative">
+              {/* Video temporarily removed. The card space is retained for future content. */}
             </div>
           </div>
         </ScrollReveal>

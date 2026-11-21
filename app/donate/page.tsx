@@ -152,7 +152,6 @@ export default function DonatePage() {
         usd_account_name: settingsMap['usd_account_name'] || '',
         usd_account: settingsMap['usd_account'] || '',
       });
-
     } catch (error: any) {
       console.error('Error fetching foundation settings:', error);
 
@@ -180,7 +179,6 @@ export default function DonatePage() {
       setTimeout(() => {
         setCopiedField(null);
       }, 2500);
-
     } catch (error) {
       console.error('Copy failed:', error);
       alert('Unable to copy account number. Please copy it manually.');
@@ -274,7 +272,6 @@ export default function DonatePage() {
 
             setAmount('');
             setPurpose('General Foundation Support');
-
           } else {
             alert('Payment was not completed. Please try again.');
           }
@@ -286,7 +283,6 @@ export default function DonatePage() {
           setIsProcessing(false);
         },
       });
-
     } catch (err: any) {
       alert('Error recording donation: ' + err.message);
       setIsProcessing(false);
@@ -327,10 +323,8 @@ export default function DonatePage() {
 
       setReceiptSubmitted(true);
       setTransferAmount('');
-
     } catch (err: any) {
       alert('Failed to submit transfer notification: ' + err.message);
-
     } finally {
       setSubmittingReceipt(false);
     }
@@ -388,8 +382,8 @@ export default function DonatePage() {
   }) {
     const isComplete = Boolean(
       bankName.trim() &&
-      accountName.trim() &&
-      accountNumber.trim()
+        accountName.trim() &&
+        accountNumber.trim()
     );
 
     return (
@@ -568,160 +562,208 @@ export default function DonatePage() {
 
         {activeTab === 'online' && (
 
-          <div className={sectionStyle}>
+          <div className={`${sectionStyle} space-y-8`}>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b-2 border-[#0A0A0A]">
+            {/* TEMPORARY MENSTRUAL HEALTH OUTREACH PAYMENT */}
 
-              <h2 className="text-xl md:text-2xl font-bold font-['Bricolage_Grotesque'] text-[#293241] flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#C62828]" />
-                Secure Instant Contribution
-              </h2>
+            <div className="border-2 border-[#0A0A0A] p-5 md:p-6 bg-transparent shadow-[4px_4px_0px_#0A0A0A] space-y-5">
 
-              <div className="flex items-center gap-1.5 bg-transparent p-1.5 border-2 border-[#0A0A0A] overflow-x-auto">
+              <div className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-[#C62828]" />
 
-                <span className="text-[10px] font-bold uppercase px-1 text-[#293241]">
-                  Currency:
-                </span>
-
-                {(['NGN', 'USD', 'GBP'] as const).map((curr) => (
-
-                  <button
-                    key={curr}
-                    type="button"
-                    onClick={() => {
-                      setCurrency(curr);
-                      setAmount('');
-                    }}
-                    className={`px-2.5 py-1.5 text-xs font-bold uppercase border border-[#0A0A0A] transition-all ${
-                      currency === curr
-                        ? 'bg-[#C62828] text-white shadow-[2px_2px_0px_#0A0A0A]'
-                        : 'bg-transparent text-[#293241] hover:bg-[#F4F1EA]'
-                    }`}
-                  >
-                    {curr}
-                  </button>
-
-                ))}
-
+                <h2 className="text-lg md:text-xl font-bold font-['Bricolage_Grotesque'] text-[#293241]">
+                  Support Our Menstrual Health Outreach
+                </h2>
               </div>
+
+              <p className="text-sm text-[#293241] font-medium leading-relaxed">
+                Help us reach 6,000 girls with menstrual health education,
+                support and essential resources. You can make your contribution
+                directly through our temporary secure Flutterwave payment link
+                below while our main online checkout is being set up.
+              </p>
+
+              <a
+                href="https://flutterwave.com/pay/eli7menstrualhealth6000girls"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#00897B] text-white font-bold py-4 px-6 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#293241] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all uppercase text-xs sm:text-sm flex items-center justify-center gap-2"
+              >
+                <Heart className="w-5 h-5" />
+                Donate to Menstrual Health Outreach
+              </a>
+
+              <p className="text-xs text-[#293241] font-medium leading-relaxed">
+                You will be redirected to Flutterwave to complete your
+                contribution.
+              </p>
 
             </div>
 
-            <form onSubmit={handleOnlineDonate} className="space-y-6">
+            {/* EXISTING ONLINE DONATION FORM - RETAINED */}
 
-              {/* AMOUNT */}
+            <div className="space-y-6">
 
-              <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b-2 border-[#0A0A0A]">
 
-                <label className={labelStyle}>
-                  Select or Enter Amount ({getSymbol()})
-                </label>
+                <h2 className="text-xl md:text-2xl font-bold font-['Bricolage_Grotesque'] text-[#293241] flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#C62828]" />
+                  Secure Instant Contribution
+                </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
+                <div className="flex items-center gap-1.5 bg-transparent p-1.5 border-2 border-[#0A0A0A] overflow-x-auto">
 
-                  {getPresets().map((preset) => (
+                  <span className="text-[10px] font-bold uppercase px-1 text-[#293241]">
+                    Currency:
+                  </span>
+
+                  {(['NGN', 'USD', 'GBP'] as const).map((curr) => (
 
                     <button
-                      key={preset}
+                      key={curr}
                       type="button"
-                      onClick={() => setAmount(preset)}
-                      className={`py-3 px-2 border-2 border-[#0A0A0A] font-bold text-xs sm:text-sm transition-all ${
-                        amount === preset
+                      onClick={() => {
+                        setCurrency(curr);
+                        setAmount('');
+                      }}
+                      className={`px-2.5 py-1.5 text-xs font-bold uppercase border border-[#0A0A0A] transition-all ${
+                        currency === curr
                           ? 'bg-[#C62828] text-white shadow-[2px_2px_0px_#0A0A0A]'
                           : 'bg-transparent text-[#293241] hover:bg-[#F4F1EA]'
                       }`}
                     >
-                      {getSymbol()}{Number(preset).toLocaleString()}
+                      {curr}
                     </button>
 
                   ))}
 
                 </div>
 
-                <input
-                  type="number"
-                  min="1"
-                  placeholder={`Custom ${currency} amount...`}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className={inputStyle}
-                  required
-                />
-
               </div>
 
-              {/* DONOR INFORMATION */}
+              <form onSubmit={handleOnlineDonate} className="space-y-6">
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-                <div>
-                  <label className={labelStyle}>Full Name *</label>
-
-                  <input
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className={inputStyle}
-                    required
-                  />
-                </div>
+                {/* AMOUNT */}
 
                 <div>
-                  <label className={labelStyle}>Email Address *</label>
 
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={inputStyle}
-                    required
-                  />
-                </div>
-
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-                <div>
                   <label className={labelStyle}>
-                    Phone Number (Optional)
+                    Select or Enter Amount ({getSymbol()})
                   </label>
 
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
+
+                    {getPresets().map((preset) => (
+
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setAmount(preset)}
+                        className={`py-3 px-2 border-2 border-[#0A0A0A] font-bold text-xs sm:text-sm transition-all ${
+                          amount === preset
+                            ? 'bg-[#C62828] text-white shadow-[2px_2px_0px_#0A0A0A]'
+                            : 'bg-transparent text-[#293241] hover:bg-[#F4F1EA]'
+                        }`}
+                      >
+                        {getSymbol()}{Number(preset).toLocaleString()}
+                      </button>
+
+                    ))}
+
+                  </div>
+
                   <input
-                    type="tel"
-                    placeholder="08000000000"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    type="number"
+                    min="1"
+                    placeholder={`Custom ${currency} amount...`}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
                     className={inputStyle}
+                    required
                   />
+
                 </div>
 
-                <div>
-                  <label className={labelStyle}>Donation Purpose</label>
+                {/* DONOR INFORMATION */}
 
-                  <input
-                    type="text"
-                    value={purpose}
-                    onChange={(e) => setPurpose(e.target.value)}
-                    className={inputStyle}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                  <div>
+                    <label className={labelStyle}>
+                      Full Name *
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className={inputStyle}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelStyle}>
+                      Email Address *
+                    </label>
+
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={inputStyle}
+                      required
+                    />
+                  </div>
+
                 </div>
 
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full bg-[#C62828] text-white font-bold py-4 px-6 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#293241] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all uppercase text-xs sm:text-sm disabled:opacity-50"
-              >
-                {isProcessing
-                  ? 'Initializing Gateway...'
-                  : `Proceed to Pay ${getSymbol()}${amount ? Number(amount).toLocaleString() : '0'}`}
-              </button>
+                  <div>
+                    <label className={labelStyle}>
+                      Phone Number (Optional)
+                    </label>
 
-            </form>
+                    <input
+                      type="tel"
+                      placeholder="08000000000"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className={inputStyle}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelStyle}>
+                      Donation Purpose
+                    </label>
+
+                    <input
+                      type="text"
+                      value={purpose}
+                      onChange={(e) => setPurpose(e.target.value)}
+                      className={inputStyle}
+                    />
+                  </div>
+
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isProcessing}
+                  className="w-full bg-[#C62828] text-white font-bold py-4 px-6 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#293241] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all uppercase text-xs sm:text-sm disabled:opacity-50"
+                >
+                  {isProcessing
+                    ? 'Initializing Gateway...'
+                    : `Proceed to Pay ${getSymbol()}${amount ? Number(amount).toLocaleString() : '0'}`}
+                </button>
+
+              </form>
+
+            </div>
 
           </div>
 
@@ -752,10 +794,13 @@ export default function DonatePage() {
               {/* SETTINGS FETCH ERROR */}
 
               {settingsError && (
+
                 <div className="border-2 border-red-600 bg-red-50 p-4 flex items-start gap-3">
+
                   <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
 
                   <div>
+
                     <p className="font-bold text-sm text-red-800">
                       Unable to load bank details
                     </p>
@@ -771,8 +816,11 @@ export default function DonatePage() {
                     >
                       Try Again
                     </button>
+
                   </div>
+
                 </div>
+
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -817,20 +865,26 @@ export default function DonatePage() {
                 </p>
 
                 {settingsLoading ? (
+
                   <p className="text-gray-500 mt-1">
                     Loading support contact...
                   </p>
+
                 ) : supportEmail ? (
+
                   <a
                     href={`mailto:${supportEmail}`}
                     className="block font-bold underline text-[#C62828] mt-1"
                   >
                     {supportEmail}
                   </a>
+
                 ) : (
+
                   <p className="text-gray-500 mt-1">
                     Support email currently unavailable.
                   </p>
+
                 )}
 
               </div>
@@ -839,7 +893,7 @@ export default function DonatePage() {
 
             {/* TRANSFER NOTIFICATION */}
 
-            <div className={`${sectionStyle}`}>
+            <div className={sectionStyle}>
 
               <h3 className="text-xl font-bold font-['Bricolage_Grotesque'] text-[#293241] mb-2 flex items-center gap-2">
                 <Send className="w-5 h-5 text-[#C62828]" />
@@ -953,7 +1007,9 @@ export default function DonatePage() {
                   </div>
 
                   <div>
-                    <label className={labelStyle}>Purpose</label>
+                    <label className={labelStyle}>
+                      Purpose
+                    </label>
 
                     <input
                       type="text"
