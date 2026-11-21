@@ -1,27 +1,67 @@
+
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { Space_Grotesk, Bricolage_Grotesque } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import MovingGlobeBg from '@/components/ui/MovingGlobeBg';
 
+// Load the original ELI7 fonts
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-bricolage-grotesque',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.eli7.ngo'),
+  metadataBase: new URL('https://www.eli7foundation.org'),
   title: {
     default: 'ELI7 Foundation — We are a dedicated women-led organization building a framework where vulnerable populations, persons with disabilities, and underserved communities thrive as equal participants in society—especially women and girls—through education, health, economic empowerment and protection. Through your support, we break barriers and build sustainable futures across Nigeria.',
     template: '%s | ELI7 Foundation',
   },
-  description: 'Extend Love Initiative Humanitarian Foundation - Empowering communities, young girls, women, and persons with disabilities through sustainable structures, healthcare, and education across Bauchi State and Nigeria.',
-  keywords: [
-    'ELI7 Foundation',
-    'Extend Love Initiative Foundation',
-    'Extend Love Initiative Humanitarian Foundation',
-    'NGO in Bauchi State',
-    'Women empowerment Nigeria',
-    'Menstrual hygiene campaign',
-    'Disability rights advocacy Nigeria',
-    'Community development Bauchi',
-  ],
+  description: 'Extend Love Initiative Humanitarian Foundation - Women-led foundation strategically empowering communities, women, young girls, children, and persons with disabilities through sustainable structures, advocacy, healthcare, and education across Bauchi State and Nigeria.',
+keywords: [
+  // Brand & Domain
+  'ELI7',
+  'ELI7 Foundation',
+  'ELI7 NGO',
+  'Extend Love Initiative',
+  'Extend Love Initiative Humanitarian Foundation',
+
+  // Hyper-Local & Regional Geography
+  'NGO in Gwalameji Yelwa',
+  'NGO in Bauchi State',
+  'Nonprofit organization in Bauchi',
+  'Charity organization in Northern Nigeria',
+  'Community development Bauchi',
+
+  // Core Programs & Beneficiaries
+  'Women-led NGO in Nigeria',
+  'Women empowerment Nigeria',
+  'Girl child education Northern Nigeria',
+  'Menstrual hygiene campaign Nigeria',
+  'Menstrual health education Bauchi',
+  'Sanitary kit distribution Nigeria',
+  'Disability rights advocacy Nigeria',
+  'Persons with disabilities inclusion Nigeria',
+
+  // Donor, Partner & Volunteer Intent
+  'Donate to NGO in Bauchi State',
+  'Support NGO in Northern Nigeria',
+  'Donate to NGO in Nigeria',
+  'Donate to NGO in Africa',
+  'CSR partnership NGO Nigeria',
+  'Volunteer opportunities Bauchi State',
+],
   authors: [{ name: 'ELI7 Foundation' }],
   creator: 'ELI7 Foundation',
   publisher: 'ELI7 Foundation',
@@ -33,9 +73,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_NG',
-    url: 'https://www.eli7.ngo',
+    url: 'https://www.eli7foundation.org',
     title: 'ELI7 Foundation — Women-led. Youth-centred. Unapologetic.',
-    description: 'Extend Love Initiative Humanitarian Foundation - Empowering communities through healthcare, education, and youth initiatives in Bauchi State, Nigeria.',
+    description: 'Extend Love Initiative Humanitarian Foundation - Women-led foundation strategically empowering communities, women, young girls, children, and persons with disabilities through sustainable structures, advocacy, healthcare, and education across Bauchi State and Nigeria.',
     siteName: 'ELI7 Foundation',
     images: [
       {
@@ -49,7 +89,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'ELI7 Foundation — Women-led. Youth-centred. Unapologetic.',
-    description: 'Extend Love Initiative Humanitarian Foundation - Empowering communities through healthcare, education, and youth initiatives.',
+    description: 'Extend Love Initiative Humanitarian Foundation - Women-led foundation strategically empowering communities, women, young girls, children, and persons with disabilities through sustainable structures, advocacy, healthcare, and education across Bauchi State and Nigeria.',
     images: ['/logo.png'],
   },
   icons: {
@@ -79,8 +119,8 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'NGO',
     name: 'Extend Love Initiative Humanitarian Foundation (ELI7 Foundation)',
-    url: 'https://www.eli7.ngo',
-    logo: 'https://www.eli7.ngo/logo.png',
+    url: 'https://www.eli7foundation.org',
+    logo: 'https://www.eli7foundation.org/logo.png',
     email: 'eli7foundation@gmail.com',
     telephone: '+2349017380098',
     address: {
@@ -89,33 +129,36 @@ export default function RootLayout({
       addressCountry: 'NG',
     },
     sameAs: [
-      'https://www.eli7.ngo',
+      'https://www.eli7foundation.org',
     ],
   };
 
-  // Get the Google Analytics ID from environment variables
   const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
-  // Show the map unless explicitly turned off
-  const showMovingMap = process.env.NEXT_PUBLIC_ENABLE_MOVING_MAP !== 'false';
+  const showMovingMap =
+    process.env.NEXT_PUBLIC_ENABLE_MOVING_MAP !== 'false';
 
   return (
     <html lang="en">
       <head>
-        {/* Structured Data for SEO */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd),
+          }}
         />
-        
-        {/* Google Analytics Script (Only renders if GA_ID exists) */}
+
         {GA_ID && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
               strategy="afterInteractive"
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
+            >
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){window.dataLayer.push(arguments);}
@@ -126,17 +169,27 @@ export default function RootLayout({
           </>
         )}
       </head>
-      
-      {/* Original white background and black text */}
-      <body className="bg-[#FFFFFE] text-[#0A0A0A] antialiased relative overflow-x-hidden">
-        
-        {/* Render the moving map background */}
+
+      <body
+        className={`
+          ${spaceGrotesk.variable}
+          ${bricolageGrotesque.variable}
+          bg-[#F4F1EA]
+          text-[#0A0A0A]
+          antialiased
+          relative
+          overflow-x-hidden
+        `}
+      >
         {showMovingMap && <MovingGlobeBg />}
 
-        {/* Main Application Container */}
         <div className="relative z-10 flex flex-col min-h-screen">
           <Navbar />
-          <main className="flex-grow">{children}</main>
+
+          <main className="flex-grow">
+            {children}
+          </main>
+
           <Footer />
         </div>
       </body>

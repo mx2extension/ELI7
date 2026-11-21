@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 
 :root {
@@ -9,6 +10,7 @@
   --black-eli7: #0A0A0A;
 }
 
+/* Original typography and appearance */
 body {
   background-color: var(--bg-paper);
   color: var(--black-eli7);
@@ -20,18 +22,30 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Bricolage Grotesque', sans-serif;
 }
 
+/* Original selection styling */
 ::selection {
   background-color: var(--red-eli7);
   color: var(--cream-eli7);
 }
 
+/* Original scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-paper);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--teal-eli7);
   border-radius: 4px;
+}
+
+/* Mobile overflow protection only */
+@media (max-width: 639px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }

@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://eli7.ngo';
+  const baseUrl = 'https://eli7foundation.org';
 
   // Static routes
   const routes = [
