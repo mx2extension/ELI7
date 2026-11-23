@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import {
   ArrowUpRight,
@@ -27,7 +28,7 @@ export default function ContactPage() {
   const [whatsappOpen, setWhatsappOpen] = useState(false);
 
   const whatsappMessage = encodeURIComponent(
-    "Hello ELI7 Foundation, I would like to make an enquiry. Please assist me."
+    'Hello ELI7 Foundation, I would like to make an enquiry. Please assist me.'
   );
 
   const whatsappContacts = [
@@ -43,33 +44,43 @@ export default function ContactPage() {
     }
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (loading) return;
+
     setLoading(true);
     setErrorMessage('');
 
-    const { error } = await supabase
-      .from('contact_submissions')
-      .insert([formData]);
+    try {
+      const { error } = await supabase
+        .from('contact_submissions')
+        .insert([formData]);
 
-    setLoading(false);
+      if (error) {
+        console.error('Contact submission error:', error);
+        setErrorMessage('Something went wrong. Please try again.');
+        return;
+      }
 
-    if (error) {
+      setSuccess(true);
+
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Unexpected contact error:', error);
       setErrorMessage('Something went wrong. Please try again.');
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    setSuccess(true);
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    });
   };
 
   const inputStyle =
-    "w-full p-4 border-2 border-[#293241]/30 bg-transparent text-[#293241] placeholder:text-[#555555] focus:border-[#00897B] focus:outline-none transition-colors";
+    'w-full p-4 border-2 border-[#293241]/30 bg-transparent text-[#293241] placeholder:text-[#555555] focus:border-[#00897B] focus:outline-none transition-colors';
 
   return (
     <main className="min-h-screen bg-transparent text-[#293241]">
@@ -251,6 +262,7 @@ export default function ContactPage() {
                   </p>
 
                   <button
+                    type="button"
                     onClick={() => setSuccess(false)}
                     className="underline font-bold"
                   >
@@ -261,38 +273,62 @@ export default function ContactPage() {
 
               ) : (
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-6"
+                >
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+                    {/* NAME */}
                     <div>
-                      <label className="block font-bold text-sm text-[#293241] mb-3">
+                      <label
+                        htmlFor="contact-name"
+                        className="block font-bold text-sm text-[#293241] mb-3"
+                      >
                         Your Name *
                       </label>
 
                       <input
+                        id="contact-name"
+                        name="name"
                         type="text"
+                        autoComplete="name"
                         required
                         value={formData.name}
                         onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
+                          setFormData((previous) => ({
+                            ...previous,
+                            name: e.target.value
+                          }))
                         }
                         placeholder="Enter your name"
                         className={inputStyle}
                       />
                     </div>
 
+                    {/* EMAIL */}
                     <div>
-                      <label className="block font-bold text-sm text-[#293241] mb-3">
+                      <label
+                        htmlFor="contact-email"
+                        className="block font-bold text-sm text-[#293241] mb-3"
+                      >
                         Email Address *
                       </label>
 
                       <input
+                        id="contact-email"
+                        name="email"
                         type="email"
+                        autoComplete="email"
+                        inputMode="email"
                         required
                         value={formData.email}
                         onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
+                          setFormData((previous) => ({
+                            ...previous,
+                            email: e.target.value
+                          }))
                         }
                         placeholder="Your email address"
                         className={inputStyle}
@@ -301,34 +337,52 @@ export default function ContactPage() {
 
                   </div>
 
+                  {/* SUBJECT */}
                   <div>
-                    <label className="block font-bold text-sm text-[#293241] mb-3">
+                    <label
+                      htmlFor="contact-subject"
+                      className="block font-bold text-sm text-[#293241] mb-3"
+                    >
                       Subject *
                     </label>
 
                     <input
+                      id="contact-subject"
+                      name="subject"
                       type="text"
                       required
                       value={formData.subject}
                       onChange={(e) =>
-                        setFormData({ ...formData, subject: e.target.value })
+                        setFormData((previous) => ({
+                          ...previous,
+                          subject: e.target.value
+                        }))
                       }
                       placeholder="What would you like to discuss?"
                       className={inputStyle}
                     />
                   </div>
 
+                  {/* MESSAGE */}
                   <div>
-                    <label className="block font-bold text-sm text-[#293241] mb-3">
+                    <label
+                      htmlFor="contact-message"
+                      className="block font-bold text-sm text-[#293241] mb-3"
+                    >
                       Your Message *
                     </label>
 
                     <textarea
+                      id="contact-message"
+                      name="message"
                       required
                       rows={7}
                       value={formData.message}
                       onChange={(e) =>
-                        setFormData({ ...formData, message: e.target.value })
+                        setFormData((previous) => ({
+                          ...previous,
+                          message: e.target.value
+                        }))
                       }
                       placeholder="Write your message here..."
                       className={`${inputStyle} resize-y`}
@@ -370,85 +424,79 @@ export default function ContactPage() {
       <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
 
         {/* WHATSAPP POPUP */}
-        <div
-          className={`mb-4 w-[320px] max-w-[calc(100vw-48px)] origin-bottom-right transition-all duration-300 ${
-            whatsappOpen
-              ? 'opacity-100 scale-100 translate-y-0'
-              : 'opacity-0 scale-90 translate-y-4 pointer-events-none'
-          }`}
-          aria-hidden={!whatsappOpen}
-        >
+        {whatsappOpen && (
+          <div className="mb-4 w-[320px] max-w-[calc(100vw-48px)] origin-bottom-right">
 
-          <div className="bg-white border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden">
+            <div className="bg-white border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden">
 
-            <div className="bg-[#00897B] text-white p-5 flex items-center justify-between">
+              <div className="bg-[#00897B] text-white p-5 flex items-center justify-between">
 
-              <div>
-                <h3 className="font-bold text-xl font-['Bricolage_Grotesque']">
-                  Chat With Us
-                </h3>
+                <div>
+                  <h3 className="font-bold text-xl font-['Bricolage_Grotesque']">
+                    Chat With Us
+                  </h3>
 
-                <p className="text-white text-xs mt-1">
-                  Select a number to start a conversation
-                </p>
+                  <p className="text-white text-xs mt-1">
+                    Select a number to start a conversation
+                  </p>
+                </div>
+
+                <MessageCircle size={27} />
+
               </div>
 
-              <MessageCircle size={27} />
+              <div className="p-4 space-y-3">
 
-            </div>
+                {whatsappContacts.map((contact) => (
 
-            <div className="p-4 space-y-3">
+                  <a
+                    key={contact.number}
+                    href={contact.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 border-2 border-[#293241]/20 hover:border-[#00897B] hover:bg-[#00897B]/5 transition-all group"
+                  >
 
-              {whatsappContacts.map((contact) => (
+                    <div className="bg-[#25D366] text-white p-3 rounded-full shrink-0">
+                      <MessageCircle size={19} />
+                    </div>
 
-                <a
-                  key={contact.number}
-                  href={contact.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  tabIndex={whatsappOpen ? 0 : -1}
-                  className="flex items-center gap-3 p-3 border-2 border-[#293241]/20 hover:border-[#00897B] hover:bg-[#00897B]/5 transition-all group"
-                >
+                    <div className="flex-1 min-w-0">
 
-                  <div className="bg-[#25D366] text-white p-3 rounded-full shrink-0">
-                    <MessageCircle size={19} />
-                  </div>
+                      <p className="text-sm font-bold text-[#293241]">
+                        {contact.label}
+                      </p>
 
-                  <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[#414141]">
+                        {contact.number}
+                      </p>
 
-                    <p className="text-sm font-bold text-[#293241]">
-                      {contact.label}
-                    </p>
+                    </div>
 
-                    <p className="text-sm text-[#414141]">
-                      {contact.number}
-                    </p>
+                    <ArrowUpRight
+                      size={19}
+                      className="text-[#00897B] group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+                    />
 
-                  </div>
+                  </a>
 
-                  <ArrowUpRight
-                    size={19}
-                    className="text-[#00897B] group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
-                  />
+                ))}
 
-                </a>
+                <p className="text-xs text-center text-[#414141] pt-2">
+                  A pre-filled message will be ready for you on WhatsApp.
+                </p>
 
-              ))}
-
-              <p className="text-xs text-center text-[#414141] pt-2">
-                A pre-filled message will be ready for you on WhatsApp.
-              </p>
+              </div>
 
             </div>
 
           </div>
-
-        </div>
+        )}
 
         {/* FLOATING BUTTON */}
         <button
           type="button"
-          onClick={() => setWhatsappOpen(!whatsappOpen)}
+          onClick={() => setWhatsappOpen((previous) => !previous)}
           aria-label={whatsappOpen ? 'Close WhatsApp contacts' : 'Open WhatsApp contacts'}
           aria-expanded={whatsappOpen}
           className="w-[62px] h-[62px] rounded-full bg-[#25D366] text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center border-[3px] border-white"

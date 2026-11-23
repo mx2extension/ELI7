@@ -1,18 +1,15 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import ScrollReveal from '@/components/ScrollReveal';
+import { createAvatar } from '@dicebear/core';
+import { avataaars } from '@dicebear/collection';
+
 import {
   Heart,
   Users,
-  HeartPulse,
-  GraduationCap,
-  Lightbulb,
-  Scale,
-  Building2,
   ArrowUpRight,
   Sparkles,
   Quote,
@@ -25,13 +22,146 @@ interface PreviewItem {
   title: string;
   slug: string;
   excerpt?: string;
+  story_text?: string;
   image_url?: string;
+  avatar?: string | null;
+  beneficiary_name?: string | null;
+  location?: string | null;
   cover_image_url?: string;
   description?: string;
   gallery_urls?: string[];
   event_date?: string;
   created_at: string;
+  published_at?: string | null;
 }
+
+// --------------------------------------------------
+// STORIES OF IMPACT AVATARS
+// --------------------------------------------------
+
+const skinTones = [
+  'ffdbb4',
+  'edb98a',
+  'd08b5b',
+  'ae5d29',
+  '614335',
+  'f8d25c',
+];
+
+const hairColors = [
+  '2c1b18',
+  '724133',
+  'a55728',
+  'b58143',
+  'd6b370',
+];
+
+const headCoveringColors = [
+  '77311b',
+  'c62828',
+  '293241',
+  'e8b4b8',
+  'f1c27d',
+  '5b8065',
+];
+
+const clothingColors = [
+  'c62828',
+  '293241',
+  'e8b4b8',
+  '00897b',
+  'f1c27d',
+  '5b8065',
+];
+
+const menStyles = [
+  'shortFlat',
+  'shortRound',
+  'shortWaved',
+  'theCaesar',
+  'theCaesarAndSidePart',
+  'shavedSides',
+  'shortCurly',
+  'sides',
+  'dreads',
+  'shaggyMullet',
+];
+
+const womenStyles = [
+  'bigHair',
+  'bob',
+  'bun',
+  'curly',
+  'curvy',
+  'frida',
+  'fro',
+  'froBand',
+  'longButNotTooLong',
+  'miaWallace',
+];
+
+function getAvatarImage(avatarId?: string | null): string {
+  if (!avatarId) return '';
+
+  const match = avatarId.match(
+    /^eli7-(men|women|hijab|headcover)-(\d{2})$/
+  );
+
+  if (!match) return '';
+
+  const [, category, number] = match;
+  const avatarNumber = Number(number);
+
+  const maximum =
+    category === 'hijab' || category === 'headcover' ? 12 : 20;
+
+  if (!avatarNumber || avatarNumber > maximum) return '';
+
+  const categoryOffset =
+    category === 'men'
+      ? 0
+      : category === 'women'
+        ? 20
+        : category === 'hijab'
+          ? 40
+          : 52;
+
+  const avatarIndex = categoryOffset + avatarNumber - 1;
+
+  let top = 'shortFlat';
+
+  if (category === 'men') {
+    top = menStyles[(avatarNumber - 1) % menStyles.length];
+  } else if (category === 'women') {
+    top = womenStyles[(avatarNumber - 1) % womenStyles.length];
+  } else if (category === 'hijab') {
+    top = 'hijab';
+  } else if (category === 'headcover') {
+    top = 'turban';
+  }
+
+  return createAvatar(avataaars, {
+    seed: avatarId,
+    top: [top as any],
+    topProbability: 100,
+    eyes: ['happy'],
+    mouth: ['smile'],
+    skinColor: [skinTones[avatarIndex % skinTones.length]],
+    hairColor: [hairColors[avatarIndex % hairColors.length]],
+    hatColor: [
+      headCoveringColors[avatarIndex % headCoveringColors.length],
+    ],
+    clothesColor: [
+      clothingColors[avatarIndex % clothingColors.length],
+    ],
+    accessoriesProbability: 0,
+    facialHairProbability: 0,
+  }).toDataUri();
+}
+
+// --------------------------------------------------
+// IMPACT COUNTER
+// --------------------------------------------------
 
 function ImpactCounter({
   target,
@@ -52,36 +182,43 @@ function ImpactCounter({
 
     let frame = 0;
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting || hasStarted.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || hasStarted.current) return;
 
-      hasStarted.current = true;
-      observer.disconnect();
+        hasStarted.current = true;
+        observer.disconnect();
 
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        setValue(target);
-        return;
-      }
-
-      let startTime: number | null = null;
-
-      const animate = (timestamp: number) => {
-        if (startTime === null) startTime = timestamp;
-
-        const progress = Math.min((timestamp - startTime) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-
-        setValue(Math.round(target * eased));
-
-        if (progress < 1) {
-          frame = window.requestAnimationFrame(animate);
-        } else {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           setValue(target);
+          return;
         }
-      };
 
-      frame = window.requestAnimationFrame(animate);
-    }, { threshold: 0.45 });
+        let startTime: number | null = null;
+
+        const animate = (timestamp: number) => {
+          if (startTime === null) startTime = timestamp;
+
+          const progress = Math.min(
+            (timestamp - startTime) / duration,
+            1
+          );
+
+          const eased = 1 - Math.pow(1 - progress, 3);
+
+          setValue(Math.round(target * eased));
+
+          if (progress < 1) {
+            frame = window.requestAnimationFrame(animate);
+          } else {
+            setValue(target);
+          }
+        };
+
+        frame = window.requestAnimationFrame(animate);
+      },
+      { threshold: 0.45 }
+    );
 
     observer.observe(element);
 
@@ -92,21 +229,32 @@ function ImpactCounter({
   }, [target, duration]);
 
   return (
-    <span ref={counterRef} aria-label={`${target.toLocaleString()}${suffix}`}>
-      {value.toLocaleString()}{suffix}
+    <span
+      ref={counterRef}
+      aria-label={`${target.toLocaleString()}${suffix}`}
+    >
+      {value.toLocaleString()}
+      {suffix}
     </span>
   );
 }
 
+// --------------------------------------------------
 // IMPACT PHOTOGRAPHS
+// --------------------------------------------------
+
 const IMPACT_IMAGES = {
   left: 'https://res.cloudinary.com/drnrbfltr/image/upload/v1782108458/WhatsApp_Image_2026-05-27_at_1.57.49_PM_jzvkae.jpg',
-  middle: 'https://res.cloudinary.com/drnrbfltr/image/upload/v1787303925/fe62afc0-901d-42c3-b6ee-f77a48c90108.png',
-  right: 'https://res.cloudinary.com/drnrbfltr/image/upload/v1787237711/622f2063-805e-4e64-891a-bae90ffb9705.png',
+  middle:
+    'https://res.cloudinary.com/drnrbfltr/image/upload/v1787303925/fe62afc0-901d-42c3-b6ee-f77a48c90108.png',
+  right:
+    'https://res.cloudinary.com/drnrbfltr/image/upload/v1787237711/622f2063-805e-4e64-891a-bae90ffb9705.png',
 };
 
+// --------------------------------------------------
 // OFFICIAL UN SDG ICONS
-// These paths match your exact public folder and filenames.
+// --------------------------------------------------
+
 const SDG_FOLDER = '/E%20SDG%20Icons%20WEB';
 
 const SDG_GOALS = [
@@ -115,44 +263,55 @@ const SDG_GOALS = [
     title: 'Good Health & Well-being',
     image: `${SDG_FOLDER}/E-WEB-Goal-03.png`,
     color: '#4C9F38',
-    description: 'Promoting access to healthcare, menstrual health education, well-being and essential support.',
+    description:
+      'Promoting access to healthcare, menstrual health education, well-being and essential support.',
   },
   {
     number: '04',
     title: 'Quality Education',
     image: `${SDG_FOLDER}/E-WEB-Goal-04.png`,
     color: '#C5192D',
-    description: 'Expanding learning opportunities, skills development and access to educational resources.',
+    description:
+      'Expanding learning opportunities, skills development and access to educational resources.',
   },
   {
     number: '09',
     title: 'Industry, Innovation & Infrastructure',
     image: `${SDG_FOLDER}/E-WEB-Goal-09.png`,
     color: '#FD6925',
-    description: 'Encouraging innovation, digital inclusion and practical solutions that strengthen communities.',
+    description:
+      'Encouraging innovation, digital inclusion and practical solutions that strengthen communities.',
   },
   {
     number: '10',
     title: 'Reduced Inequalities',
     image: `${SDG_FOLDER}/E-WEB-Goal-10.png`,
     color: '#DD1367',
-    description: 'Advancing equal opportunities, dignity and meaningful participation for persons with disabilities and underserved groups.',
+    description:
+      'Advancing equal opportunities, dignity and meaningful participation for persons with disabilities and underserved groups.',
   },
   {
     number: '11',
     title: 'Sustainable Cities & Communities',
     image: `${SDG_FOLDER}/E-WEB-Goal-11.png`,
     color: '#FD9D24',
-    description: 'Building safer, stronger and more inclusive communities where everyone can thrive.',
+    description:
+      'Building safer, stronger and more inclusive communities where everyone can thrive.',
   },
 ];
+
+// --------------------------------------------------
+// SUPPORT CARDS
+// --------------------------------------------------
 
 const SUPPORT_CARDS = [
   {
     title: 'Every Penny Goes Towards Impactful Programs',
     category: 'Donate',
-    description: 'Direct financial support fuels our ongoing field distributions, educational drives, and community empowerment initiatives.',
-    image: 'https://res.cloudinary.com/drnrbfltr/image/upload/v1787231895/dafb89d5-fa43-4a50-b39f-c969e1f9bffe.png',
+    description:
+      'Direct financial support fuels our ongoing field distributions, educational drives, and community empowerment initiatives.',
+    image:
+      'https://res.cloudinary.com/drnrbfltr/image/upload/v1787231895/dafb89d5-fa43-4a50-b39f-c969e1f9bffe.png',
     button: 'Support the Cause',
     href: '/donate',
     color: '#00897B',
@@ -160,8 +319,10 @@ const SUPPORT_CARDS = [
   {
     title: 'Join Our Hands-On Efforts',
     category: 'Volunteer',
-    description: 'Give your time and skills to support field distributions, workshops, and community mentorship programs.',
-    image: 'https://res.cloudinary.com/drnrbfltr/image/upload/v1787233915/6e1d1e38-7c35-4b56-bf27-727c54f470b4.png',
+    description:
+      'Give your time and skills to support field distributions, workshops, and community mentorship programs.',
+    image:
+      'https://res.cloudinary.com/drnrbfltr/image/upload/v1787233915/6e1d1e38-7c35-4b56-bf27-727c54f470b4.png',
     button: 'Become a Volunteer',
     href: '/volunteer',
     color: '#C62828',
@@ -169,19 +330,29 @@ const SUPPORT_CARDS = [
   {
     title: 'Mobilize Your Network',
     category: 'Fundraise',
-    description: 'Set up peer campaigns or corporate giving channels to support our nationwide projects and expansion goals.',
-    image: 'https://res.cloudinary.com/drnrbfltr/image/upload/v1787238632/5fb9af94-f599-4461-9c72-312714242377.png',
+    description:
+      'Set up peer campaigns or corporate giving channels to support our nationwide projects and expansion goals.',
+    image:
+      'https://res.cloudinary.com/drnrbfltr/image/upload/v1787238632/5fb9af94-f599-4461-9c72-312714242377.png',
     button: 'Support the Cause',
     href: '/donate',
     color: '#00897B',
   },
 ];
 
+// ==================================================
+// HOMEPAGE
+// ==================================================
+
 export default function HomePage() {
   const [latestNews, setLatestNews] = useState<PreviewItem[]>([]);
   const [latestStories, setLatestStories] = useState<PreviewItem[]>([]);
   const [latestProjects, setLatestProjects] = useState<PreviewItem[]>([]);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  // ------------------------------------------------
+  // FETCH HOMEPAGE CONTENT
+  // ------------------------------------------------
 
   useEffect(() => {
     let active = true;
@@ -199,15 +370,37 @@ export default function HomePage() {
           .limit(4),
 
         supabase
-          .from('stories')
-          .select('id, title, slug, excerpt, image_url, created_at')
+          .from('impact_stories')
+          .select(`
+            id,
+            title,
+            slug,
+            story_text,
+            image_url,
+            avatar,
+            beneficiary_name,
+            location,
+            created_at,
+            published_at
+          `)
+          .eq('status', 'approved')
+          .not('slug', 'is', null)
+          .order('published_at', {
+            ascending: false,
+            nullsFirst: false,
+          })
           .order('created_at', { ascending: false })
           .limit(4),
 
         supabase
           .from('projects')
-          .select('id, title, slug, description, image_url, gallery_urls, event_date, created_at')
-          .order('event_date', { ascending: false, nullsFirst: false })
+          .select(
+            'id, title, slug, description, image_url, gallery_urls, event_date, created_at'
+          )
+          .order('event_date', {
+            ascending: false,
+            nullsFirst: false,
+          })
           .order('created_at', { ascending: false })
           .limit(3),
       ]);
@@ -215,7 +408,18 @@ export default function HomePage() {
       if (!active) return;
 
       setLatestNews(news || []);
-      setLatestStories(stories || []);
+
+      setLatestStories(
+        (stories || []).map((story) => ({
+          ...story,
+          excerpt: story.story_text
+            ? story.story_text.length > 150
+              ? `${story.story_text.slice(0, 150).trim()}...`
+              : story.story_text
+            : '',
+        }))
+      );
+
       setLatestProjects(projects || []);
     }
 
@@ -226,18 +430,25 @@ export default function HomePage() {
     };
   }, []);
 
+  // ------------------------------------------------
+  // FAQ CONTENT
+  // ------------------------------------------------
+
   const faqs = [
     {
       question: 'How are financial donations utilized?',
-      answer: '100% of donations are channeled into program delivery, fund scholarships, assistive devices for persons with disabilities, vocational training, micro‑grants, healthcare enrolment, emergency relief and everything else that supports our mission in building more inclusive communities. ELI7 prioritises transparency and regularly reports on impact.',
+      answer:
+        '100% of donations are channeled into program delivery, fund scholarships, assistive devices for persons with disabilities, vocational training, micro-grants, healthcare enrolment, emergency relief and everything else that supports our mission in building more inclusive communities. ELI7 prioritises transparency and regularly reports on impact.',
     },
     {
       question: 'Can I volunteer or support remotely?',
-      answer: 'Yes! Beyond hands-on field volunteering, we welcome digital advocates, campaign mobilizers, and technical contributors who want to help expand our reach.',
+      answer:
+        'Yes! Beyond hands-on field volunteering, we welcome digital advocates, campaign mobilizers, and technical contributors who want to help expand our reach.',
     },
     {
       question: 'How do I make a direct bank transfer?',
-      answer: 'You can support our mission via direct bank transfers to our official institutional accounts on the donate page. Visit our donate page for details.',
+      answer:
+        'You can support our mission via direct bank transfers to our official institutional accounts on the donate page. Visit our donate page for details.',
     },
   ];
 
@@ -245,6 +456,7 @@ export default function HomePage() {
     <main className="flex flex-col gap-20 pb-20">
 
       {/* 1. HERO SECTION */}
+
       <section className="max-w-7xl w-full mx-auto px-6 pt-12 md:pt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <ScrollReveal>
           <div className="space-y-6">
@@ -254,19 +466,31 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-4xl md:text-6xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] tracking-tight leading-tight">
-              Extending Love, Empowering Communities, and Building Futures Across Nigeria
+              Extending Love, Empowering Communities, and Building Futures
+              Across Nigeria
             </h1>
 
             <p className="text-lg text-[#0A0A0A]/80 leading-relaxed font-medium">
-              We are a dedicated women-led organization building a framework where vulnerable populations, persons with disabilities, and underserved communities thrive as equal participants in society—especially women and girls—through education, health, economic empowerment and protection. Through your support, we break barriers and build sustainable futures across Nigeria.
+              We are a dedicated women-led organization building a framework
+              where vulnerable populations, persons with disabilities, and
+              underserved communities thrive as equal participants in
+              society—especially women and girls—through education, health,
+              economic empowerment and protection. Through your support, we
+              break barriers and build sustainable futures across Nigeria.
             </p>
 
             <div className="flex flex-wrap gap-4 pt-2">
-              <Link href="/donate" className="inline-flex items-center gap-2 bg-[#C62828] text-white font-bold text-sm uppercase px-6 py-3.5 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#293241] transition-all">
+              <Link
+                href="/donate"
+                className="inline-flex items-center gap-2 bg-[#C62828] text-white font-bold text-sm uppercase px-6 py-3.5 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#293241] transition-all"
+              >
                 Donate Now <Heart className="w-5 h-5 fill-current" />
               </Link>
 
-              <Link href="/projects" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-sm uppercase px-6 py-3.5 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#00897B] hover:text-white transition-all">
+              <Link
+                href="/projects"
+                className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-sm uppercase px-6 py-3.5 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#00897B] hover:text-white transition-all"
+              >
                 Our Projects <ArrowUpRight className="w-5 h-5" />
               </Link>
             </div>
@@ -285,9 +509,14 @@ export default function HomePage() {
 
             <div className="flex justify-between items-center pt-2">
               <div>
-                <p className="text-xs uppercase tracking-wider text-[#FFD23F] font-bold">Nationwide Reach</p>
-                <p className="text-2xl font-extrabold font-['Bricolage_Grotesque']">Empowering Lives Daily</p>
+                <p className="text-xs uppercase tracking-wider text-[#FFD23F] font-bold">
+                  Nationwide Reach
+                </p>
+                <p className="text-2xl font-extrabold font-['Bricolage_Grotesque']">
+                  Empowering Lives Daily
+                </p>
               </div>
+
               <div className="bg-[#C62828] text-white p-3 border-2 border-[#0A0A0A]">
                 <Users className="w-6 h-6" />
               </div>
@@ -297,23 +526,21 @@ export default function HomePage() {
       </section>
 
       {/* 2. MISSION, GOALS & WHAT DRIVES US */}
+
       <section className="w-full max-w-7xl mx-auto px-6">
         <ScrollReveal className="w-full">
           <div className="relative isolate bg-[#F4F1EA] border-2 border-[#0A0A0A] shadow-[10px_10px_0px_#0A0A0A] overflow-hidden">
-
-            {/* YOUR MISSION AND GOALS BACKGROUND IMAGE */}
             <div
               className="absolute inset-0 -z-20 bg-cover bg-center"
               style={{
-                backgroundImage: "url('https://res.cloudinary.com/drnrbfltr/image/upload/v1795055662/52e81b98-7f5d-450a-a521-c5ce18a06aa1.png')",
+                backgroundImage:
+                  "url('https://res.cloudinary.com/drnrbfltr/image/upload/v1795055662/52e81b98-7f5d-450a-a521-c5ce18a06aa1.png')",
               }}
             />
 
-            {/* Readability overlay */}
             <div className="absolute inset-0 -z-10 bg-[#F4F1EA]/85" />
 
             <div className="relative p-6 md:p-12 lg:p-14 space-y-8 md:space-y-10">
-
               <div className="max-w-3xl space-y-5">
                 <div className="inline-flex items-center gap-2 bg-[#C62828] text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 border border-[#0A0A0A]">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -325,7 +552,12 @@ export default function HomePage() {
                 </h2>
 
                 <p className="text-base md:text-lg text-[#0A0A0A]/80 leading-relaxed max-w-2xl">
-                  At ELI7, our mission is to catalyze inclusive transformation by advancing the rights and opportunities of persons with disabilities, underserved communities, especially women and girls. We break barriers through education, healthcare, economic empowerment, and protection initiatives, ensuring full participation in Nigerian society.
+                  At ELI7, our mission is to catalyze inclusive transformation
+                  by advancing the rights and opportunities of persons with
+                  disabilities, underserved communities, especially women and
+                  girls. We break barriers through education, healthcare,
+                  economic empowerment, and protection initiatives, ensuring
+                  full participation in Nigerian society.
                 </p>
 
                 <div className="flex items-center gap-3 pt-1">
@@ -336,30 +568,34 @@ export default function HomePage() {
               </div>
 
               {/* WHAT DRIVES US */}
+
               <div className="border-t-2 border-[#0A0A0A]/15 pt-7 md:pt-9 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-widest text-[#00897B]">
                       What Drives Us
                     </span>
+
                     <h3 className="text-2xl md:text-3xl font-extrabold text-[#293241] font-['Bricolage_Grotesque'] mt-1">
                       Our Areas of Focus
                     </h3>
                   </div>
 
                   <p className="text-sm text-[#0A0A0A]/75 max-w-sm leading-relaxed">
-                    Our work is guided by five Sustainable Development Goals that help us build healthier, more equitable and inclusive communities.
+                    Our work is guided by five Sustainable Development Goals
+                    that help us build healthier, more equitable and inclusive
+                    communities.
                   </p>
                 </div>
 
                 {/* OFFICIAL UN SDG CARDS */}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                   {SDG_GOALS.map((goal) => (
                     <div
                       key={goal.number}
                       className="bg-white/95 border-2 border-[#0A0A0A]/15 flex flex-col overflow-hidden shadow-[4px_4px_0px_rgba(10,10,10,0.10)] hover:-translate-y-1 transition-transform duration-300"
                     >
-                      {/* Original UN SDG image */}
                       <div
                         className="w-full aspect-square p-3 flex items-center justify-center"
                         style={{ backgroundColor: goal.color }}
@@ -394,13 +630,16 @@ export default function HomePage() {
               </div>
 
               {/* COMMITMENT STATEMENT */}
+
               <div className="flex items-center gap-4 bg-[#293241] p-5 md:p-6">
                 <div className="w-11 h-11 bg-[#FFD23F] text-[#293241] flex items-center justify-center flex-shrink-0">
                   <Heart className="w-5 h-5 fill-current" />
                 </div>
 
                 <p className="text-white text-sm md:text-base font-medium leading-relaxed">
-                  Every focus area represents our commitment to building stronger, healthier and more inclusive communities across Nigeria.
+                  Every focus area represents our commitment to building
+                  stronger, healthier and more inclusive communities across
+                  Nigeria.
                 </p>
               </div>
 
@@ -412,20 +651,18 @@ export default function HomePage() {
                   Explore Our Work <ArrowUpRight className="w-4 h-4" />
                 </Link>
               </div>
-
             </div>
           </div>
         </ScrollReveal>
       </section>
 
       {/* 3. IMPACT SNAPSHOT */}
+
       <section
         aria-label="ELI7 Foundation impact statistics"
         className="relative z-0 w-full max-w-[1440px] mx-auto px-5 sm:px-6 clear-both"
       >
         <div className="grid grid-cols-1 lg:grid-cols-[0.98fr_0.98fr_2fr] gap-4 lg:gap-5 lg:h-[clamp(420px,34vw,500px)] lg:min-h-[420px] items-stretch">
-
-          {/* LEFT PHOTOGRAPH */}
           <ScrollReveal
             variant="slide-left"
             className="h-full min-h-0"
@@ -442,8 +679,8 @@ export default function HomePage() {
           </ScrollReveal>
 
           {/* MIDDLE STATISTICS */}
-          <div className="grid grid-cols-1 grid-rows-2 gap-4 lg:gap-5 lg:h-full min-h-0">
 
+          <div className="grid grid-cols-1 grid-rows-2 gap-4 lg:gap-5 lg:h-full min-h-0">
             <ScrollReveal
               variant="drop-down"
               delay={120}
@@ -462,9 +699,14 @@ export default function HomePage() {
 
                 <div className="relative z-10 h-full flex items-center p-5 lg:p-4 xl:p-5">
                   <p className="max-w-[68%] text-[clamp(1.45rem,2.15vw,2.35rem)] leading-[1.08] font-extrabold uppercase tracking-[-0.035em] text-[#B69A50] font-['Bricolage_Grotesque']">
-                    Empowerment<br />
-                    for <span className="text-black"><ImpactCounter target={300} /></span>
-                    <br />people
+                    Empowerment
+                    <br />
+                    for{' '}
+                    <span className="text-black">
+                      <ImpactCounter target={300} />
+                    </span>
+                    <br />
+                    people
                   </p>
                 </div>
               </div>
@@ -488,6 +730,7 @@ export default function HomePage() {
           </div>
 
           {/* RIGHT PHOTOGRAPH */}
+
           <ScrollReveal
             variant="slide-right"
             delay={160}
@@ -503,22 +746,26 @@ export default function HomePage() {
               />
             </div>
           </ScrollReveal>
-
         </div>
       </section>
 
       {/* 4. EXECUTIVE DIRECTOR'S PERSONAL MESSAGE */}
-      {/* Separate section: normal document flow, no negative positioning */}
+
       <section className="relative z-0 w-full max-w-7xl mx-auto px-6 clear-both">
         <ScrollReveal className="w-full">
           <div className="relative isolate overflow-hidden bg-[#FFF7F5] border-2 border-[#0A0A0A] shadow-[12px_12px_0px_#0A0A0A] p-6 md:p-14">
-
-            {/* Visible heart-led backdrop: warmth and compassion without reducing text contrast */}
-            <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none overflow-hidden"
+            >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_35%,rgba(198,40,40,0.12),transparent_34%),radial-gradient(circle_at_12%_90%,rgba(238,108,77,0.10),transparent_30%)]" />
+
               <Heart className="absolute -right-10 top-8 h-64 w-64 md:h-[27rem] md:w-[27rem] rotate-12 fill-[#C62828]/10 text-[#C62828]/15 stroke-[1.2]" />
+
               <Heart className="absolute left-[34%] -bottom-16 h-40 w-40 md:h-56 md:w-56 -rotate-12 fill-[#EE6C4D]/[0.06] text-[#EE6C4D]/10 stroke-[1.2]" />
+
               <div className="absolute -right-20 -bottom-28 h-80 w-80 rounded-full border border-[#C62828]/10" />
+
               <div className="absolute right-12 top-12 h-32 w-32 rounded-full border border-[#C62828]/10" />
             </div>
 
@@ -527,7 +774,6 @@ export default function HomePage() {
             </div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center pt-16 md:pt-20">
-
               <div className="h-80 md:h-96 border-2 border-[#0A0A0A] bg-[#00897B] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden">
                 <img
                   src="https://res.cloudinary.com/drnrbfltr/image/upload/v1787737369/d2ab0c13-fa51-4d64-b2a3-765caa32c239.png"
@@ -550,15 +796,26 @@ export default function HomePage() {
 
                 <div className="space-y-4 text-[#0A0A0A]/80 text-base md:text-lg leading-relaxed font-medium">
                   <p>
-                    &ldquo;Overseeing the entire scope and vision of the ELI7 Foundation, I see firsthand the profound resilience of the Nigerian people, and equally, the immense challenges faced by vulnerable groups and persons with disabilities.
+                    &ldquo;Overseeing the entire scope and vision of the ELI7
+                    Foundation, I see firsthand the profound resilience of
+                    the Nigerian people, and equally, the immense challenges
+                    faced by vulnerable groups and persons with disabilities.
                   </p>
 
                   <p>
-                    True transformation cannot happen from a distance. It takes all of us—our hearts, our resources, and our unwavering commitment—to dismantle barriers and build a truly inclusive society. Every project we run, from food welfare to digital skills empowerment, relies on the generosity of partners like you.
+                    True transformation cannot happen from a distance. It
+                    takes all of us—our hearts, our resources, and our
+                    unwavering commitment—to dismantle barriers and build a
+                    truly inclusive society. Every project we run, from food
+                    welfare to digital skills empowerment, relies on the
+                    generosity of partners like you.
                   </p>
 
                   <p className="font-bold text-[#293241]">
-                    When you support our work, you aren&apos;t just giving to a foundation; you are restoring dignity and creating real, lasting change for families across Nigeria who need it most. Join hands with us today.&rdquo;
+                    When you support our work, you aren&apos;t just giving to
+                    a foundation; you are restoring dignity and creating
+                    real, lasting change for families across Nigeria who
+                    need it most. Join hands with us today.&rdquo;
                   </p>
                 </div>
 
@@ -567,6 +824,7 @@ export default function HomePage() {
                     <p className="font-extrabold text-xl text-[#293241] font-['Bricolage_Grotesque']">
                       Amarachi Sunday
                     </p>
+
                     <p className="text-sm font-bold text-[#C62828] uppercase">
                       Executive Director, ELI7 Foundation
                     </p>
@@ -580,13 +838,13 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
-
             </div>
           </div>
         </ScrollReveal>
       </section>
 
       {/* 5. BE THE CHANGE */}
+
       <section className="w-full max-w-7xl mx-auto px-6 space-y-8">
         <ScrollReveal>
           <div className="text-center max-w-2xl mx-auto space-y-2">
@@ -599,7 +857,8 @@ export default function HomePage() {
             </h2>
 
             <p className="text-[#0A0A0A]/80 text-sm">
-              Choose how you want to contribute and make an immediate impact on vulnerable lives.
+              Choose how you want to contribute and make an immediate impact
+              on vulnerable lives.
             </p>
           </div>
         </ScrollReveal>
@@ -653,6 +912,7 @@ export default function HomePage() {
       </section>
 
       {/* 6. PROJECT EVENT GALLERIES */}
+
       <section className="w-full max-w-7xl mx-auto px-6 space-y-10">
         <ScrollReveal>
           <div className="space-y-4 border-b-2 border-[#0A0A0A] pb-4">
@@ -665,15 +925,19 @@ export default function HomePage() {
                 Project Event Galleries
               </h2>
             </div>
-
           </div>
         </ScrollReveal>
 
         {latestProjects.length === 0 ? (
           <ScrollReveal>
             <div className="bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-12 text-center space-y-3">
-              <p className="text-lg font-bold text-[#293241]">No projects published yet.</p>
-              <p className="text-sm text-[#0A0A0A]/70">Check back soon for project updates and event photographs.</p>
+              <p className="text-lg font-bold text-[#293241]">
+                No projects published yet.
+              </p>
+
+              <p className="text-sm text-[#0A0A0A]/70">
+                Check back soon for project updates and event photographs.
+              </p>
             </div>
           </ScrollReveal>
         ) : (
@@ -687,10 +951,15 @@ export default function HomePage() {
                   className="group w-full min-w-0 bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-4 sm:p-6 md:p-7 flex flex-col sm:flex-row items-stretch gap-5 md:gap-6 overflow-hidden hover:-translate-y-1 hover:shadow-[10px_10px_0px_#0A0A0A] transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00897B]"
                 >
                   {/* PROJECT IMAGE */}
+
                   <div className="w-full h-52 sm:h-auto sm:w-[34%] sm:min-w-[140px] md:min-w-[180px] sm:min-h-[220px] border-2 border-[#0A0A0A] bg-[#00897B] flex-shrink-0 overflow-hidden">
-                    {(project.image_url || project.gallery_urls?.[0]) ? (
+                    {project.image_url || project.gallery_urls?.[0] ? (
                       <img
-                        src={project.image_url || project.gallery_urls?.[0]}
+                        src={
+                          project.image_url ||
+                          project.gallery_urls?.[0] ||
+                          ''
+                        }
                         alt={project.title}
                         className="w-full h-full min-h-[200px] sm:min-h-[220px] object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
@@ -703,6 +972,7 @@ export default function HomePage() {
                   </div>
 
                   {/* PROJECT DETAILS */}
+
                   <div className="flex flex-col justify-center flex-grow min-w-0 gap-3 py-2 sm:py-1">
                     <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug group-hover:text-[#00897B] transition-colors">
                       {project.title}
@@ -716,15 +986,25 @@ export default function HomePage() {
 
                     <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-[#0A0A0A]/60 pt-2">
                       <span>
-                        {new Date(project.event_date || project.created_at).toLocaleDateString('en-US', {
+                        {new Date(
+                          project.event_date || project.created_at
+                        ).toLocaleDateString('en-US', {
                           month: 'long',
                           day: 'numeric',
                           year: 'numeric',
                         })}
                       </span>
+
                       <span className="inline-flex items-center gap-1">
                         <Images className="w-3.5 h-3.5 text-[#C62828]" />
-                        {new Set([project.image_url, ...(project.gallery_urls || [])].filter(Boolean)).size} photos
+
+                        {new Set(
+                          [
+                            project.image_url,
+                            ...(project.gallery_urls || []),
+                          ].filter(Boolean)
+                        ).size}{' '}
+                        photos
                       </span>
                     </div>
 
@@ -739,13 +1019,17 @@ export default function HomePage() {
         )}
 
         <div className="flex justify-start">
-          <Link href="/projects" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors">
+          <Link
+            href="/projects"
+            className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors"
+          >
             View All Projects <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
 
       {/* 7. NEWS & ARTICLES */}
+
       <section className="w-full max-w-7xl mx-auto px-6 space-y-10">
         <ScrollReveal>
           <div className="space-y-4 border-b-2 border-[#0A0A0A] pb-4">
@@ -758,15 +1042,19 @@ export default function HomePage() {
                 News & Articles
               </h2>
             </div>
-
           </div>
         </ScrollReveal>
 
         {latestNews.length === 0 ? (
           <ScrollReveal>
             <div className="bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-12 text-center space-y-3">
-              <p className="text-lg font-bold text-[#293241]">No news articles published yet.</p>
-              <p className="text-sm text-[#0A0A0A]/70">Check back soon for updates from our team.</p>
+              <p className="text-lg font-bold text-[#293241]">
+                No news articles published yet.
+              </p>
+
+              <p className="text-sm text-[#0A0A0A]/70">
+                Check back soon for updates from our team.
+              </p>
             </div>
           </ScrollReveal>
         ) : (
@@ -781,7 +1069,12 @@ export default function HomePage() {
                 >
                   <div className="w-full sm:w-48 h-48 sm:h-52 border-2 border-[#0A0A0A] bg-[#00897B] flex-shrink-0 overflow-hidden">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs font-bold uppercase text-white/60">
                         News Visual
@@ -792,11 +1085,14 @@ export default function HomePage() {
                   <div className="flex flex-col justify-between flex-grow space-y-3">
                     <div className="space-y-2">
                       <span className="text-xs font-medium text-[#0A0A0A]/60 block">
-                        {new Date(item.created_at).toLocaleDateString('en-US', {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
+                        {new Date(item.created_at).toLocaleDateString(
+                          'en-US',
+                          {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                          }
+                        )}
                       </span>
 
                       <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug group-hover:text-[#00897B] transition-colors">
@@ -815,13 +1111,17 @@ export default function HomePage() {
         )}
 
         <div className="flex justify-start">
-          <Link href="/news" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors">
+          <Link
+            href="/news"
+            className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors"
+          >
             View More News <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
 
       {/* 8. STORIES OF IMPACT */}
+
       <section className="w-full max-w-7xl mx-auto px-6 space-y-8">
         <ScrollReveal>
           <div className="space-y-4 border-b-2 border-[#0A0A0A] pb-4">
@@ -834,81 +1134,106 @@ export default function HomePage() {
                 Stories of Impact
               </h2>
             </div>
-
           </div>
         </ScrollReveal>
 
         {latestStories.length === 0 ? (
           <ScrollReveal>
             <div className="bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-12 text-center space-y-3">
-              <p className="text-lg font-bold text-[#293241]">No impact stories published yet.</p>
-              <p className="text-sm text-[#0A0A0A]/70">Check back soon for field dispatches and updates.</p>
+              <p className="text-lg font-bold text-[#293241]">
+                No impact stories published yet.
+              </p>
+
+              <p className="text-sm text-[#0A0A0A]/70">
+                Check back soon for stories from people whose lives have
+                been touched by ELI7 Foundation.
+              </p>
             </div>
           </ScrollReveal>
         ) : (
           <ScrollReveal delay={150}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {latestStories.map((story) => (
-                <Link
-                  key={story.id}
-                  href={`/stories/${story.slug}`}
-                  aria-label={`Read story: ${story.title}`}
-                  className="group w-full min-w-0 bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-4 sm:p-6 md:p-7 flex flex-col sm:flex-row items-stretch gap-5 md:gap-6 overflow-hidden hover:-translate-y-1 hover:shadow-[10px_10px_0px_#0A0A0A] transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00897B]"
-                >
-                  {/* STORY IMAGE */}
-                  <div className="w-full h-52 sm:h-auto sm:w-[34%] sm:min-w-[140px] md:min-w-[180px] sm:min-h-[220px] border-2 border-[#0A0A0A] bg-[#00897B] flex-shrink-0 overflow-hidden">
-                    {story.image_url ? (
-                      <img
-                        src={story.image_url}
-                        alt={story.title}
-                        className="w-full h-full min-h-[200px] sm:min-h-[220px] object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full min-h-[200px] sm:min-h-[220px] flex items-center justify-center text-xs font-bold uppercase text-white/60">
-                        Story Visual
-                      </div>
-                    )}
-                  </div>
+              {latestStories.map((story) => {
+                const avatarImage = getAvatarImage(story.avatar);
 
-                  {/* STORY DETAILS */}
-                  <div className="flex flex-col justify-center flex-grow min-w-0 gap-3 py-2 sm:py-1">
-                    <span className="text-xs font-medium text-[#0A0A0A]/60 block">
-                      {new Date(story.created_at).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
+                return (
+                  <Link
+                    key={story.id}
+                    href={`/stories/${story.slug}`}
+                    aria-label={`Read story: ${story.title}`}
+                    className="group w-full min-w-0 bg-white border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] p-4 sm:p-6 md:p-7 flex flex-col sm:flex-row items-stretch gap-5 md:gap-6 overflow-hidden hover:-translate-y-1 hover:shadow-[10px_10px_0px_#0A0A0A] transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00897B]"
+                  >
+                    {/* STORY IMAGE */}
 
-                    <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug group-hover:text-[#00897B] transition-colors">
-                      {story.title}
-                    </h3>
+                    <div className="w-full h-52 sm:h-auto sm:w-[34%] sm:min-w-[140px] md:min-w-[180px] sm:min-h-[220px] border-2 border-[#0A0A0A] bg-[#00897B] flex-shrink-0 overflow-hidden">
+                      {story.image_url ? (
+                        <img
+                          src={story.image_url}
+                          alt={story.title}
+                          className="w-full h-full min-h-[200px] sm:min-h-[220px] object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                      ) : avatarImage ? (
+                        <img
+                          src={avatarImage}
+                          alt={`${story.beneficiary_name || 'Story contributor'} avatar`}
+                          className="w-full h-full min-h-[200px] sm:min-h-[220px] object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full min-h-[200px] sm:min-h-[220px] flex items-center justify-center text-xs font-bold uppercase text-white/60">
+                          Story Visual
+                        </div>
+                      )}
+                    </div>
 
-                    {story.excerpt && (
-                      <p className="text-sm text-[#0A0A0A]/80 line-clamp-3 leading-relaxed">
-                        {story.excerpt}
-                      </p>
-                    )}
+                    {/* STORY DETAILS */}
 
-                    <span className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] underline underline-offset-4 w-fit mt-1">
-                      Read Story <ArrowUpRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </Link>
-              ))}
+                    <div className="flex flex-col justify-center flex-grow min-w-0 gap-3 py-2 sm:py-1">
+                      <span className="text-xs font-medium text-[#0A0A0A]/60 block">
+                        {new Date(story.created_at).toLocaleDateString(
+                          'en-US',
+                          {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                          }
+                        )}
+                      </span>
+
+                      <h3 className="text-xl md:text-2xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug group-hover:text-[#00897B] transition-colors">
+                        {story.title}
+                      </h3>
+
+                      {story.excerpt && (
+                        <p className="text-sm text-[#0A0A0A]/80 line-clamp-3 leading-relaxed">
+                          {story.excerpt}
+                        </p>
+                      )}
+
+                      <span className="inline-flex items-center gap-1 font-bold text-xs uppercase text-[#00897B] underline underline-offset-4 w-fit mt-1">
+                        Read Story <ArrowUpRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </ScrollReveal>
         )}
 
         <div className="flex justify-start">
-          <Link href="/stories" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors">
+          <Link
+            href="/stories"
+            className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#00897B] hover:text-white transition-colors"
+          >
             View More Stories <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
 
       {/* 9. FAQ */}
+
       <section className="w-full max-w-4xl mx-auto px-6 space-y-8 pt-6 border-t-2 border-[#0A0A0A]/10">
         <ScrollReveal>
           <div className="space-y-4 border-b-2 border-[#0A0A0A] pb-4">
@@ -921,7 +1246,6 @@ export default function HomePage() {
                 Frequently Asked Questions
               </h2>
             </div>
-
           </div>
         </ScrollReveal>
 
@@ -931,16 +1255,25 @@ export default function HomePage() {
               const isOpen = openFaq === index;
 
               return (
-                <div key={index} className="bg-white border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden">
+                <div
+                  key={index}
+                  className="bg-white border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden"
+                >
                   <button
                     type="button"
-                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    onClick={() =>
+                      setOpenFaq(isOpen ? null : index)
+                    }
                     aria-expanded={isOpen}
                     className="w-full p-5 text-left flex justify-between items-center gap-4 font-extrabold text-[#293241] font-['Bricolage_Grotesque'] text-lg hover:bg-[#F4F1EA] transition-colors"
                   >
                     <span>{faq.question}</span>
 
-                    <div className={`p-1 border border-[#0A0A0A] bg-[#C62828] text-white transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
+                    <div
+                      className={`p-1 border border-[#0A0A0A] bg-[#C62828] text-white transition-transform flex-shrink-0 ${
+                        isOpen ? 'rotate-180' : ''
+                      }`}
+                    >
                       <ChevronDown className="w-5 h-5" />
                     </div>
                   </button>
@@ -957,12 +1290,14 @@ export default function HomePage() {
         </ScrollReveal>
 
         <div className="flex justify-start">
-          <Link href="/faq" className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors">
+          <Link
+            href="/faq"
+            className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] font-bold text-xs uppercase px-4 py-2 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#C62828] hover:text-white transition-colors"
+          >
             View More FAQs <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
-
     </main>
   );
 }

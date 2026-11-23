@@ -284,8 +284,8 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/volunteer" className="hover:underline text-[#FFFFFE]/90">
-                Volunteer
+              <Link href="/stories/submit" className="hover:underline text-[#FFFFFE]/90">
+                Submit a Story
               </Link>
             </li>
             <li>
