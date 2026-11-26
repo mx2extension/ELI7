@@ -244,7 +244,7 @@ function ImpactCounter({
 // --------------------------------------------------
 
 const IMPACT_IMAGES = {
-  left: 'https://res.cloudinary.com/drnrbfltr/image/upload/v1782108458/WhatsApp_Image_2026-05-27_at_1.57.49_PM_jzvkae.jpg',
+  left: 'https://res.cloudinary.com/drnrbfltr/image/upload/v1795690098/d0b7f9f2-9417-48a6-aae2-248099ba620a.png',
   middle:
     'https://res.cloudinary.com/drnrbfltr/image/upload/v1787303925/fe62afc0-901d-42c3-b6ee-f77a48c90108.png',
   right:
@@ -311,7 +311,7 @@ const SUPPORT_CARDS = [
     description:
       'Direct financial support fuels our ongoing field distributions, educational drives, and community empowerment initiatives.',
     image:
-      'https://res.cloudinary.com/drnrbfltr/image/upload/v1787231895/dafb89d5-fa43-4a50-b39f-c969e1f9bffe.png',
+      'https://res.cloudinary.com/drnrbfltr/image/upload/v1795689033/5e0174a4-f05e-45ca-8614-abdd3c140043.png',
     button: 'Support the Cause',
     href: '/donate',
     color: '#00897B',
@@ -322,7 +322,7 @@ const SUPPORT_CARDS = [
     description:
       'Give your time and skills to support field distributions, workshops, and community mentorship programs.',
     image:
-      'https://res.cloudinary.com/drnrbfltr/image/upload/v1787233915/6e1d1e38-7c35-4b56-bf27-727c54f470b4.png',
+      'https://res.cloudinary.com/drnrbfltr/image/upload/v1795689249/218b96d9-2c4e-4233-b710-f3b40747f8b8.png',
     button: 'Become a Volunteer',
     href: '/volunteer',
     color: '#C62828',
@@ -333,7 +333,7 @@ const SUPPORT_CARDS = [
     description:
       'Set up peer campaigns or corporate giving channels to support our nationwide projects and expansion goals.',
     image:
-      'https://res.cloudinary.com/drnrbfltr/image/upload/v1787238632/5fb9af94-f599-4461-9c72-312714242377.png',
+      'https://res.cloudinary.com/drnrbfltr/image/upload/v1795688616/b98bd721-6a14-4c8f-96a7-f46d3e2cfdc6.png',
     button: 'Support the Cause',
     href: '/donate',
     color: '#00897B',
@@ -843,6 +843,7 @@ export default function HomePage() {
         </ScrollReveal>
       </section>
 
+
       {/* 5. BE THE CHANGE */}
 
       <section className="w-full max-w-7xl mx-auto px-6 space-y-8">
@@ -864,22 +865,24 @@ export default function HomePage() {
         </ScrollReveal>
 
         <ScrollReveal delay={150}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
             {SUPPORT_CARDS.map((card) => (
               <div
                 key={card.category}
-                className="bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] flex flex-col justify-between overflow-hidden"
+                className="h-full min-w-0 bg-[#FFFFFE] border-2 border-[#0A0A0A] shadow-[8px_8px_0px_#0A0A0A] flex flex-col overflow-hidden"
               >
-                <div className="h-48 border-b-2 border-[#0A0A0A] bg-[#00897B]">
+                {/* CARD IMAGE */}
+                <div className="w-full h-48 flex-shrink-0 border-b-2 border-[#0A0A0A] bg-[#00897B] overflow-hidden">
                   <img
                     src={card.image}
                     alt={card.category}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-[center_15%]"
                     loading="lazy"
                   />
                 </div>
 
-                <div className="p-6 space-y-4 flex flex-col flex-grow justify-between">
+                {/* CARD CONTENT */}
+                <div className="p-6 flex-1 min-w-0 flex flex-col gap-4">
                   <div className="space-y-3">
                     <span
                       className="text-white text-xs font-bold uppercase px-2.5 py-1 border border-[#0A0A0A] inline-block"
@@ -888,28 +891,33 @@ export default function HomePage() {
                       {card.category}
                     </span>
 
-                    <h3 className="text-xl font-bold text-[#293241] font-['Bricolage_Grotesque']">
+                    <h3 className="text-xl font-bold text-[#293241] font-['Bricolage_Grotesque'] leading-snug break-words">
                       {card.title}
                     </h3>
 
-                    <p className="text-sm text-[#0A0A0A]/80 leading-relaxed">
+                    <p className="text-sm text-[#0A0A0A]/80 leading-relaxed break-words">
                       {card.description}
                     </p>
                   </div>
 
-                  <Link
-                    href={card.href}
-                    className="inline-flex items-center gap-2 text-white font-bold text-xs uppercase px-4 py-2.5 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#293241] transition-colors"
-                    style={{ backgroundColor: card.color }}
-                  >
-                    {card.button} <ArrowUpRight className="w-4 h-4" />
-                  </Link>
+                  {/* ACTION BUTTON */}
+                  <div className="mt-auto pt-2">
+                    <Link
+                      href={card.href}
+                      className="inline-flex items-center justify-center gap-2 text-white font-bold text-xs uppercase px-4 py-2.5 border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] w-fit hover:bg-[#293241] transition-colors"
+                      style={{ backgroundColor: card.color }}
+                    >
+                      {card.button}
+                      <ArrowUpRight className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </ScrollReveal>
       </section>
+
 
       {/* 6. PROJECT EVENT GALLERIES */}
 
